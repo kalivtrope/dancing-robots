@@ -1,34 +1,43 @@
 local _ENV = _GameEnv
-local noteCounter = 0
+local hitNoteCounter = 0
+local missedNoteCounter = 0
 local TapNotes = {}
 local HoldNotes = {}
 
 -- The list of tap note scores available during play.
 -- Only the uncommented values are actually going to be considered as triggers in this game.
 local acceptedTapScores = {
-  --TapNoteScore_None = true,
-  --TapNoteScore_HitMine = true,
-  --TapNoteScore_AvoidMine = true,
-  --TapNoteScore_CheckpointMiss = true,
-  --TapNoteScore_Miss = true,
-  TapNoteScore_W5 = true,
-  TapNoteScore_W4 = true,
-  TapNoteScore_W3 = true,
-  TapNoteScore_W2 = true,
-  TapNoteScore_W1 = true,
-  TapNoteScore_ProW5 = true,
-  TapNoteScore_ProW4 = true,
-  TapNoteScore_ProW3 = true,
-  TapNoteScore_ProW2 = true,
-  TapNoteScore_ProW1 = true,
-  --TapNoteScore_MaxScore = true,
-  --TapNoteScore_CheckpointHit = true,
+  Misses = {
+    --TapNoteScore_None = true,
+    --TapNoteScore_HitMine = true,
+    --TapNoteScore_AvoidMine = true,
+    --TapNoteScore_CheckpointMiss = true,
+    TapNoteScore_Miss = true,
+  },
+  Hits = {
+    TapNoteScore_W5 = true,
+    TapNoteScore_W4 = true,
+    TapNoteScore_W3 = true,
+    TapNoteScore_W2 = true,
+    TapNoteScore_W1 = true,
+    TapNoteScore_ProW5 = true,
+    TapNoteScore_ProW4 = true,
+    TapNoteScore_ProW3 = true,
+    TapNoteScore_ProW2 = true,
+    TapNoteScore_ProW1 = true,
+    --TapNoteScore_MaxScore = true,
+    --TapNoteScore_CheckpointHit = true,
+  },
 }
 local acceptedHoldScores = {
-  --HoldNoteScore_None = true,
-  --HoldNoteScore_LetGo = true,
-  HoldNoteScore_Held = true,
-  --HoldNoteScore_MissedHold = true,
+  Misses = {
+    --HoldNoteScore_None = true,
+    HoldNoteScore_LetGo = true,
+    HoldNoteScore_MissedHold = true,
+  },
+  Hits = {
+    HoldNoteScore_Held = true,
+  },
 }
 
 local acceptedTapTypes = {
@@ -54,15 +63,43 @@ local function is_hold_judgment(judgment)
   return judgment.HoldNoteScore ~= nil
 end
 
+local function is_hit_hold_score(score)
+  return acceptedHoldScores.Hits[score] ~= nil
+end
+
+local function is_miss_hold_score(score)
+  return acceptedHoldScores.Misses[score] ~= nil
+end
+
+local function is_hit_tap_score(score)
+  return acceptedTapScores.Hits[score] ~= nil
+end
+
+local function is_miss_tap_score(score)
+  return acceptedTapScores.Misses[score] ~= nil
+end
+
+
+local function is_accepted_hold_score(score)
+  return is_hit_hold_score(score) or is_miss_hold_score(score)
+end
+
+local function is_accepted_tap_score(score)
+  return is_hit_tap_score(score) or is_miss_tap_score(score)
+end
+
+local function is_accepted_note_type(note_type)
+  return acceptedTapTypes[note_type] ~= nil
+end
+
 local function get_hold_notes_from_judgment(judgment)
   -- see Player::SetHoldJudgment
   local notes = {}
   local v = judgment.TapNote
   if is_hold_judgment(judgment)
-    and acceptedHoldScores[judgment.HoldNoteScore]
-    and acceptedTapTypes[v:GetTapNoteType()] then
-      notes[#notes + 1] = v
-  end
+    and is_accepted_hold_score(judgment.HoldNoteScore)
+    and is_accepted_note_type(v:GetTapNoteType())
+      then notes[#notes + 1] = {Note = v, IsHit = is_hit_hold_score(judgment.HoldNoteScore)} end
   return notes
 end
 
@@ -72,10 +109,9 @@ local function get_tap_notes_from_judgment(judgment)
   if is_non_hold_judgment(judgment) then
     for _,v in pairs(judgment.Notes) do
       if v
-        and acceptedTapScores[judgment.TapNoteScore]
-        and acceptedTapTypes[v:GetTapNoteType()] then
-          notes[#notes + 1] = v
-      end
+        and is_accepted_tap_score(judgment.TapNoteScore)
+        and is_accepted_note_type(v:GetTapNoteType())
+          then notes[#notes + 1] = {Note = v, IsHit = is_hit_tap_score(judgment.TapNoteScore)} end
     end
   end
   return notes
@@ -83,25 +119,41 @@ end
 
 return Def.Actor{
   Name="JudgmentStalker",
-  HandleNewNoteCommand=function(self)
-    noteCounter = noteCounter + 1
-    Debug.screenMsg(noteCounter)
+  HandleNewHitNoteCommand=function(self)
+    hitNoteCounter = hitNoteCounter + 1
+    Debug.screenMsg("hit:", hitNoteCounter, "missed:", missedNoteCounter)
+  end,
+  HandleNewMissedNoteCommand=function(self)
+    missedNoteCounter = missedNoteCounter + 1
+    Debug.screenMsg("hit:", hitNoteCounter, "missed:", missedNoteCounter)
   end,
   JudgmentMessageCommand=function(self,judgment)
     Debug.logTable(judgment)
-    for _,tap_note in pairs(get_tap_notes_from_judgment(judgment)) do
+    for _,note_data in pairs(get_tap_notes_from_judgment(judgment)) do
+      tap_note = note_data.Note
+      is_hit = note_data.IsHit
       if TapNotes[tap_note] == nil then
         TapNotes[tap_note] = true
-        self:queuecommand("HandleNewNote")
-        Debug.logMsg(noteCounter, judgment.TapNoteScore, tap_note, tap_note:GetTapNoteType(), tap_note:GetTapNoteSubType())
+        if is_hit then
+          self:queuecommand("HandleNewHitNote")
+        else
+          self:queuecommand("HandleNewMissedNote")
+        end
+        Debug.logMsg(hitNoteCounter, missedNoteCounter, judgment.TapNoteScore, tap_note, tap_note:GetTapNoteType(), tap_note:GetTapNoteSubType())
       end
     end
 
-    for _,hold_note in pairs(get_hold_notes_from_judgment(judgment)) do
+    for _,note_data in pairs(get_hold_notes_from_judgment(judgment)) do
+      hold_note = note_data.Note
+      is_hit = note_data.IsHit
       if HoldNotes[hold_note] == nil then
         HoldNotes[hold_note] = true
-        self:queuecommand("HandleNewNote")
-        Debug.logMsg(noteCounter, judgment.HoldNoteScore, hold_note, hold_note:GetTapNoteType(), hold_note:GetTapNoteSubType())
+        if is_hit then
+          self:queuecommand("HandleNewHitNote")
+        else
+          self:queuecommand("HandleNewMissedNote")
+        end
+        Debug.logMsg(hitNoteCounter, missedNoteCounter, judgment.HoldNoteScore, hold_note, hold_note:GetTapNoteType(), hold_note:GetTapNoteSubType())
       end
     end
   end
