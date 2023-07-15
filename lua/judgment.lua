@@ -6,7 +6,7 @@ local TapNotes = {}
 local HoldNotes = {}
 
 -- The list of all tap note scores and types available during play
--- taken from the Stepmania source code.
+-- taken from the OutFox source code.
 -- Only the uncommented values are actually going to be considered as triggers in this game.
 local acceptedTapScores = {
   Misses = {
@@ -129,11 +129,12 @@ local function get_tap_notes_from_judgment(judgment)
 end
 
 local function count_notes(note_data)
-  local count = 0
-  -- note_data is an array of NoteDataEntries
+  -- see OutFox docs for Player::GetNoteData
+  -- parameter note_data is an array of NoteDataEntries
   -- the NoteDataEntry follows the structure
   -- { beat, column, notetype, quantization, length = fBeatLen }
   -- we're only after the 3rd argument here
+  local count = 0
   for _,note_data_entry in ipairs(note_data) do
     local note_type = note_data_entry[3]
     -- tap notes count as one
