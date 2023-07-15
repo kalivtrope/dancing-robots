@@ -1,10 +1,12 @@
 local _ENV = _GameEnv
 local hitNoteCounter = 0
 local missedNoteCounter = 0
+local totalNumberOfNotes = 0
 local TapNotes = {}
 local HoldNotes = {}
 
--- The list of tap note scores available during play.
+-- The list of all tap note scores and types available during play
+-- taken from the Stepmania source code.
 -- Only the uncommented values are actually going to be considered as triggers in this game.
 local acceptedTapScores = {
   Misses = {
@@ -52,6 +54,11 @@ local acceptedTapTypes = {
   --TapNoteType_Fake = true,
 }
 
+local acceptedTapSubtypes = {
+  TapNoteSubType_Hold = true,
+  TapNoteSubType_Roll = true,
+}
+
 
 local function is_non_hold_judgment(judgment)
   -- see Player::SetJudgment
@@ -92,6 +99,10 @@ local function is_accepted_note_type(note_type)
   return acceptedTapTypes[note_type] ~= nil
 end
 
+local function is_accepted_note_subtype(note_subtype)
+  return acceptedTapSubtypes[note_subtype] ~= nil
+end
+
 local function get_hold_notes_from_judgment(judgment)
   -- see Player::SetHoldJudgment
   local notes = {}
@@ -117,15 +128,39 @@ local function get_tap_notes_from_judgment(judgment)
   return notes
 end
 
+local function count_notes(note_data)
+  local count = 0
+  -- note_data is an array of NoteDataEntries
+  -- the NoteDataEntry follows the structure
+  -- { beat, column, notetype, quantization, length = fBeatLen }
+  -- we're only after the 3rd argument here
+  for _,note_data_entry in ipairs(note_data) do
+    local note_type = note_data_entry[3]
+    -- tap notes count as one
+    if is_accepted_note_type(note_type) then
+      count = count + 1
+    -- hold notes count as two (head + tail)
+    elseif is_accepted_note_subtype(note_type) then
+      count = count + 2
+    end
+  end
+  return count
+end
+
 return Def.Actor{
   Name="JudgmentStalker",
+  OnCommand=function(self)
+    local p1 = SCREENMAN:GetTopScreen():GetChild('PlayerP1')
+    totalNumberOfNotes = count_notes(p1:GetNoteData())
+    Debug.screenMsg(totalNumberOfNotes)
+  end,
   HandleNewHitNoteCommand=function(self)
     hitNoteCounter = hitNoteCounter + 1
-    Debug.screenMsg("hit:", hitNoteCounter, "missed:", missedNoteCounter)
+    Debug.screenMsg("hit:", hitNoteCounter, "missed:", missedNoteCounter, "total:", totalNumberOfNotes)
   end,
   HandleNewMissedNoteCommand=function(self)
     missedNoteCounter = missedNoteCounter + 1
-    Debug.screenMsg("hit:", hitNoteCounter, "missed:", missedNoteCounter)
+    Debug.screenMsg("hit:", hitNoteCounter, "missed:", missedNoteCounter, "total:", totalNumberOfNotes)
   end,
   JudgmentMessageCommand=function(self,judgment)
     Debug.logTable(judgment)
