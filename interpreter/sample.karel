@@ -1,0 +1,7 @@
+turn_left turn-right
+drop
+collect
+nop;
+drop;
+movetoitem9;
+nop move_to_item
