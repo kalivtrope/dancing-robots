@@ -49,9 +49,9 @@ local function tokenize_all_lines(file_handle)
 end
 
 local filename=... or arg[1]
-file = filename and assert(io.open(filename, "r")) or io.stdin
+local file = filename and assert(io.open(filename, "r")) or io.stdin
 
-tokens = tokenize_all_lines(file)
+local tokens = tokenize_all_lines(file)
 
 if error_encountered then
   write_stderr("errors were encountered, refusing to continue.\n")
