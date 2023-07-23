@@ -17,12 +17,12 @@ local Game = {
 
 function Game:report_warning(instruction_no, instruction_type, msg)
   self.warning_encountered = true
-  write_stderr(string.format("[instruction %d %s] warning: %s\n", instruction_no, instruction_type, msg))
+  write_stderr(string.format("[instruction #%d %s] warning: %s\n", instruction_no, instruction_type, msg))
 end
 
 function Game:report_error(instruction_no, instruction_type, msg)
   self.error_encountered = true
-  write_stderr(string.format("[instruction %d %s] error: %s\n", instruction_no, instruction_type, msg))
+  write_stderr(string.format("[instruction #%d %s] error: %s\n", instruction_no, instruction_type, msg))
 end
 
 function Game:report_warning_wall(instruction_no, instruction_type, obj_name)
@@ -59,22 +59,23 @@ end
 function Game:move_to_item(instruction_no)
   -- if there's no item in the robot's direction, this command behaves the same as MOVETOWALL
 
-  -- HOWEVER, since robot is guaranteed to make at least one step in here,
+  -- NOTE: since robot is guaranteed to make at least one step in here,
   -- it is possible to crash into a wall if standing directly in front of it
   local x,y,success,err = self.maze:move_to_item(self.robot_state.x, self.robot_state.y, self.robot_state.orientation)
   if err == true then
-      self:report_error(instruction_no, Tokens.MOVE_TO_ITEM, "attempted to move to item but instead crashed into a wall")
+      self:report_error(instruction_no, Tokens.MOVETOITEM, "attempted to move to item but instead crashed into a wall")
   end
   if success == false then
-    self:report_warning_wall(instruction_no, Tokens.MOVE_TO_ITEM, "item")
+    self:report_warning_wall(instruction_no, Tokens.MOVETOITEM, "item")
   end
   self.robot_state.x, self.robot_state.y = x, y
 end
 
 function Game:move_to_wall(instruction_no)
   local x,y,success = self.maze:move_to_wall(self.robot_state.x, self.robot_state.y, self.robot_state.orientation)
-  if success == false then
-      self:report_error(instruction_no, Tokens.MOVE_TO_WALL, "attempted to move to wall but instead exited the maze")
+  if success == false then -- this shouldn't really happen
+      self:report_error(instruction_no, Tokens.MOVETOWALL, "attempted to move to wall but instead exited the maze")
+      error("maze is missing borders", 2)
   end
   self.robot_state.x, self.robot_state.y = x, y
 end
@@ -83,7 +84,7 @@ function Game:move_to_start(instruction_no)
   -- if there's no start in the robot's direction, this command behaves the same as MOVETOWALL
   local x,y,success = self.maze:move_to_start(self.robot_state.x, self.robot_state.y, self.robot_state.orientation)
   if success == false then
-    self:report_warning_wall(instruction_no, Tokens.MOVE_TO_START, "start")
+    self:report_warning_wall(instruction_no, Tokens.MOVETOSTART, "start")
   end
   self.robot_state.x, self.robot_state.y = x, y
 end
@@ -92,7 +93,7 @@ function Game:move_to_end(instruction_no)
   -- if there's no end in the robot's direction, this command behaves the same as MOVETOWALL
   local x,y,success = self.maze:move_to_start(self.robot_state.x, self.robot_state.y, self.robot_state.orientation)
   if success == false then
-    self:report_warning_wall(instruction_no, Tokens.MOVE_TO_END, "end")
+    self:report_warning_wall(instruction_no, Tokens.MOVETOEND, "end")
   end
   self.robot_state.x, self.robot_state.y = x, y
 end

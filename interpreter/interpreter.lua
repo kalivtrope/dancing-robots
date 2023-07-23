@@ -57,6 +57,9 @@ function Interpreter:execute_next_command()
     return OUT_OF_INSTRUCTIONS
   end
   self.game[string.lower(cmd)](self.game, self.instruction_no)
+  if self.game.error_encountered then
+    self.error_encountered = true
+  end
   return cmd
 end
 
