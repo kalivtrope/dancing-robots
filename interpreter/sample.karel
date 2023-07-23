@@ -1,7 +1,14 @@
-turn_left turn-right
-drop
+turnleft
+movetoitem
 collect
-nop;
-drop;
-movetoitem9;
-nop move_to_item
+turnright
+turnright
+movetowall
+turnright
+movetoitem
+collect
+turnright
+turnright
+movetoend
+drop
+drop
