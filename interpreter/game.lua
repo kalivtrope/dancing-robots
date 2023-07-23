@@ -79,7 +79,8 @@ function Game:move_to_item(instruction_no)
   -- it is possible to crash into a wall if standing directly in front of it
   local x,y,success,err = self.maze:move_to_item(self.robot_state.x, self.robot_state.y, self.robot_state.orientation)
   if err == true then
-      self:report_error(instruction_no, Tokens.MOVETOITEM, "attempted to move to item but instead crashed into a wall")
+    self:report_error(instruction_no, Tokens.MOVETOITEM, "attempted to move to item but instead crashed into a wall")
+    return
   end
   if success == false then
     self:report_warning_wall(instruction_no, Tokens.MOVETOITEM, "item")
