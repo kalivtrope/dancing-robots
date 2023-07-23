@@ -22,9 +22,9 @@ return {
   end,
   assert_bounds = function (var, var_str, min, max)
     if not max then
-      assert(min <= var, string.format("variable '%s' out of bounds [%d, inf]", var_str, min))
+      assert(min <= var, string.format("variable '%s' = %d out of bounds [%d, inf]", var_str, var, min))
     else
-      assert(min <= var and var <= max, string.format("variable '%s' out of bounds [%d, %d]", var_str, min, max))
+      assert(min <= var and var <= max, string.format("variable '%s' = %d out of bounds [%d, %d]", var_str, var, min, max))
     end
   end,
 }
