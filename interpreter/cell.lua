@@ -47,6 +47,14 @@ function Cell:add_object(o)
   end
 end
 
+function Cell:remove_item()
+  if not self:is_item() then
+    return false
+  end
+  self.object_counts[ObjectType.ITEM] = self.object_counts[ObjectType.ITEM] - 1
+  return true
+end
+
 function Cell:add_neighbour_wall(neighbour, dir)
   self.neighbour_walls[dir] = neighbour
 end
@@ -61,6 +69,10 @@ end
 
 function Cell:is_wall()
   return (self:get_count("WALL") or 0) > 0
+end
+
+function Cell:count_items()
+  return self:get_count("ITEM") or 0
 end
 
 function Cell:is_item()
