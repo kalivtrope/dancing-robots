@@ -13,8 +13,10 @@ local Cell = {
 Cell.__index = Cell
 Cell.__tostring = function(self)
   local res = ""
-  for k in pairs(self.object_counts) do
-    res = res .. ObjectCharInv[k]
+  for k,v in pairs(self.object_counts) do
+    if v > 0 then
+      res = res .. string.rep(ObjectCharInv[k], v)
+    end
   end
   if self:is_empty() then
     res = "."
@@ -64,7 +66,7 @@ function Cell:get_count(oc_type)
 end
 
 function Cell:is_empty()
-  return not (self:get_count("START") or self:get_count("END") or self:get_count("WALL") or self:get_count("ITEM"))
+  return not (self:is_start() or self:is_end() or self:is_wall() or self:is_item())
 end
 
 function Cell:is_wall()
