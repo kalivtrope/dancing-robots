@@ -115,7 +115,7 @@ local function maze_from_str(maze_str, height, width)
   local last_wall_up = {}
   --local last_item_up = {}
   for line in (maze_str .. '\n'):gmatch('(.-)\r?\n') do
-    print(line)
+    --print(line)
     local last_wall_left = nil
     --local last_item_left = nil
     local x = 1
@@ -191,7 +191,7 @@ function Maze:drop(x, y)
     self.item_rows[y]:add_item(x)
     self.item_cols[x]:add_item(y)
   end
-  return self[x][y]:add_object(ObjectType.Item)
+  return self[x][y]:add_object(ObjectType.ITEM)
 end
 
 function Maze:move_to_item(x, y, dir)
@@ -200,7 +200,7 @@ function Maze:move_to_item(x, y, dir)
     if wall_y == y-1 then
       return nil,nil,false,true
     end
-    local item_y = self.item_cols[x]:index_of_lower_bound(y-1)
+    local item_y = self.item_cols[x]:left(y)
     if wall_y > item_y then
       return x,wall_y+1,false,false
     end
@@ -212,8 +212,7 @@ function Maze:move_to_item(x, y, dir)
     if wall_x == x+1 then
       return nil,nil,false,true
     end
-    local lb_x = self.item_rows[y]:index_of_lower_bound(x)
-    local item_x = self.item_rows[y]:right(lb_x)
+    local item_x = self.item_rows[y]:right(x)
     if wall_x < item_x then
       return wall_x-1,y,false,false
     end
@@ -225,8 +224,7 @@ function Maze:move_to_item(x, y, dir)
     if wall_y == y+1 then
       return nil,nil,false,true
     end
-    local lb_y = self.item_cols[x]:index_of_lower_bound(y)
-    local item_y = self.item_cols[x]:right(lb_y)
+    local item_y = self.item_cols[x]:right(y)
     if wall_y < item_y then
       return x,wall_y-1,false,false
     end
@@ -238,7 +236,7 @@ function Maze:move_to_item(x, y, dir)
     if wall_x == x-1 then
       return nil,nil,false,true
     end
-    local item_x = self.item_rows[y]:index_of_lower_bound(x-1)
+    local item_x = self.item_rows[y]:left(x)
     if wall_x > item_x then
       return wall_x+1,y,false,false
     end
@@ -260,7 +258,7 @@ function Maze:move_to_wall(x, y, dir)
   if not wall then
     return nil,nil,nil
   end
-  local ret_x, ret_y = one_block_before(x, y, wall)
+  local ret_x, ret_y = one_block_before(wall.x, wall.y, dir)
   return ret_x,ret_y,true
 end
 
