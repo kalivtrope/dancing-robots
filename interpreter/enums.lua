@@ -47,4 +47,15 @@ return {
     WIN = 2,
     LOSE = 3,
   },
+  Tokens = {
+    TURNLEFT = "TURN_LEFT",
+    TURNRIGHT = "TURN_RIGHT",
+    COLLECT = "COLLECT",
+    DROP = "DROP",
+    MOVETOITEM = "MOVE_TO_ITEM",
+    MOVETOWALL = "MOVE_TO_WALL",
+    MOVETOSTART = "MOVE_TO_START",
+    MOVETOEND = "MOVE_TO_END",
+    NOP = "NOP",
+  }
 }
