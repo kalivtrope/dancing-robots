@@ -51,7 +51,7 @@ end
 
 function Interpreter:execute_next_command()
   self.instruction_no = self.instruction_no + 1
-  local cmd = self.tokens[self.instruction_no]
+  local cmd = Tokens[self.tokens[self.instruction_no]]
   if not cmd then
     self.out_of_instructions = true
     return OUT_OF_INSTRUCTIONS
@@ -75,7 +75,7 @@ end
 function Interpreter:new(player_input_file_path, maze_configuration_file_path)
   local o = {}
   setmetatable(o, self)
-  o.tokens = tokenize_file(assert(io.open(player_input_file_path, "r")))
+  o.tokens = tokenize_file(o, assert(io.open(player_input_file_path, "r")))
   if o.error_encountered then
     write_stderr("errors were encountered, refusing to continue.\n")
     return nil
