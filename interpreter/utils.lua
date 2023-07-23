@@ -14,6 +14,9 @@ end
 
 return {
   dump = dump,
+  write_stderr = function(msg)
+    io.stderr:write(msg)
+  end,
   assert_type = function (var, var_str, type_str)
     assert(type(var) == type_str, string.format("%s must be a %s (got %s)", var_str, type_str, type(var)))
   end,
