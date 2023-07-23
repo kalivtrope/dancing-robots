@@ -102,17 +102,20 @@ function Game:nop()
 end
 
 
-function Game:new(params)
+function Game:new(file)
   -- params: table with entries:
     -- 'type_str' describes the according GameType
     -- 'maze_str'
     -- `width`
     -- `height`  parameters to Maze:new()
-  local game_type_key = string.upper(params.type_str)
+  local type_str = file:read("*line")
+  local height, width = file:read("*n", "*n")
+  local maze_str = file:read("*all")
+  local game_type_key = string.upper(type_str)
   --assert(GameType[game_type_key], _ENV.string.format("unknown game type '%s'", params.type_str))
   local o = { type = GameType[game_type_key], result = {type = GameResult.NONE, message = ""}, }
   setmetatable(o, self)
-  o.maze = Maze:new(params)
+  o.maze = Maze:new({maze_str = maze_str, width=width, height=height})
   o.robot_state = RobotState:new{x = o.maze.start_cell.x, y = o.maze.start_cell.y}
   return o
 end
