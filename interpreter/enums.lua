@@ -36,6 +36,17 @@ return {
     EAST = 2,
     SOUTH = 3,
     WEST = 4,
+    _NUM_DIRS = 4,
+    opposite_direction = function(dir)
+      return (dir + 1) % 4 + 1
+    end,
+    dir_delta = function(dir)
+      local x, y = 0,-1 -- north delta
+      for _=2,dir do
+        x,y = -y,x
+      end
+      return x,y
+    end
   },
   GameType = {
     MATRIX = 1,
