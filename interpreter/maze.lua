@@ -284,7 +284,7 @@ end
 function Maze:move_to_pos(src_x, src_y, dst_x, dst_y, dir)
   local wall_x, wall_y, success = self:move_to_wall(src_x, src_y, dir)
   if reachable_from_pos(src_x, src_y, dst_x, dst_y, dir)
-    and (not success or is_closer(src_x, src_y, dst_x, dst_y, wall_x, wall_y)) then
+    and (not success or is_closer(src_x, src_y, dst_x, dst_y, wall_x, wall_y, dir)) then
     return dst_x, dst_y, true
   end
   return wall_x, wall_y, false
