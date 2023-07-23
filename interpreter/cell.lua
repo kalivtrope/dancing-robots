@@ -1,7 +1,7 @@
 local enums = require("enums")
 local utils = require("utils")
 local assert_bounds = utils.assert_bounds
-local ObjectType = enums.ObjectType
+local ObjectType,ObjectCharInv = enums.ObjectType, enums.ObjectCharInv
 
 local Cell = {
   x = -1,
@@ -11,6 +11,16 @@ local Cell = {
 }
 
 Cell.__index = Cell
+Cell.__tostring = function(self)
+  local res = ""
+  for k in pairs(self.object_counts) do
+    res = res .. ObjectCharInv[k]
+  end
+  if self:is_empty() then
+    res = "."
+  end
+  return res
+end
 
 function Cell:new(o)
   o = o or {}

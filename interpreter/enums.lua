@@ -22,9 +22,15 @@ ObjectChar = {
   ['I'] = ObjectType.ITEM,
 }
 
+local ObjectCharInv = {}
+for k,v in pairs(ObjectChar) do
+  ObjectCharInv[v] = k
+end
+
 return {
   ObjectType = ObjectType,
   ObjectChar = ObjectChar,
+  ObjectCharInv = ObjectCharInv,
   Direction = {
     NORTH = 1,
     EAST = 2,

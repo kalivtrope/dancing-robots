@@ -16,6 +16,16 @@ local Maze = {
 }
 
 Maze.__index = Maze
+Maze.__tostring = function(self)
+  local res = ""
+  for y=1,self.height do
+    for x=1,self.width do
+      res = res .. tostring(self[x][y]) .. " "
+    end
+    res = res .. "\n"
+  end
+  return res
+end
 
 
 local ItemRow = {}
