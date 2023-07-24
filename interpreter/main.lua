@@ -1,9 +1,15 @@
+package.path = "../?.lua;" .. package.path -- TODO: decide about execution path
 local Interpreter = require("interpreter")
+--local MatrixJudge = require("problemset.matrix.judge")
 
 local player_input, game_configuration = arg[1], arg[2]
-int = Interpreter:new(player_input, game_configuration)
-while not int.out_of_instructions and not int.error_encountered do
-  local cmd = int:execute_next_command()
-  print(cmd)
-  print(int.game)
+local int = Interpreter:new(player_input, game_configuration)
+local judge = require("problemset."..int.game.type..".judge"):attach_to_interpreter(int)
+
+
+while true do
+  judge:judge_next_command()
+  if judge.judgment_received then break end
+  print(judge.interpreter:last_command_executed())
+  print(judge.interpreter.game)
 end

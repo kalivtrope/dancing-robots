@@ -49,7 +49,12 @@ local function tokenize_file(self, file_handle)
   return tokens
 end
 
+function Interpreter:last_command_executed()
+  return Tokens[self.tokens[self.instruction_no]]
+end
+
 function Interpreter:execute_next_command()
+  if self.out_of_instructions or self.error_encountered then return false end
   self.instruction_no = self.instruction_no + 1
   local cmd = Tokens[self.tokens[self.instruction_no]]
   if not cmd then

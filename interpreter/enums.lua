@@ -49,9 +49,9 @@ return {
     end
   },
   GameType = {
-    MATRIX = 1,
-    MAZE = 2,
-    SORT = 3,
+    MATRIX = 'matrix',
+    MAZE = 'maze',
+    SORT = 'sort',
   },
   GameResult = {
     NONE = 1,
