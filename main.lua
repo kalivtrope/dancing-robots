@@ -1,6 +1,6 @@
 local Interpreter = require("interpreter.interpreter")
 
-local player_input, game_configuration = arg[1], arg[2]
+local game_configuration, player_input  = arg[1], arg[2]
 local int = Interpreter:new(player_input, game_configuration)
 local judge = require("problemset."..int.game.type..".judge"):attach_to_interpreter(int)
 
