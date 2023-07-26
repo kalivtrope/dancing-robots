@@ -1,4 +1,4 @@
-local utils = require("utils")
+local utils = require("interpreter.utils")
 local assert_bounds = utils.assert_bounds
 
 local FenwickTree = {}

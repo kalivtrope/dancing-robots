@@ -1,7 +1,7 @@
-local Cell = require("cell")
-local enums = require("enums")
-local utils = require("utils")
-local FenwickTree = require("fenwick-tree")
+local Cell = require("interpreter.cell")
+local enums = require("interpreter.enums")
+local utils = require("interpreter.utils")
+local FenwickTree = require("interpreter.fenwick-tree")
 local ObjectType, Direction = enums.ObjectType, enums.Direction
 local assert_type, assert_bounds = utils.assert_type, utils.assert_bounds
 

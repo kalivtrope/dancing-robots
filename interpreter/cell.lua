@@ -1,5 +1,5 @@
-local enums = require("enums")
-local utils = require("utils")
+local enums = require("interpreter.enums")
+local utils = require("interpreter.utils")
 local assert_bounds = utils.assert_bounds
 local ObjectType,ObjectCharInv = enums.ObjectType, enums.ObjectCharInv
 
