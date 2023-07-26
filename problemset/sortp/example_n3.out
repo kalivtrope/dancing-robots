@@ -1,0 +1,13 @@
+movetowall
+turnright
+movetowall
+turnleft
+movetowall
+collect
+turnright
+movetowall
+drop
+turnleft
+movetowall
+turnright
+movetoend
