@@ -191,10 +191,11 @@ function Maze:drop(x, y)
     self.item_rows[y]:add_item(x)
     self.item_cols[x]:add_item(y)
   end
-  return self[x][y]:add_object(ObjectType.ITEM)
+  self[x][y]:add_item()
 end
 
 function Maze:move_to_item(x, y, dir)
+  -- TODO: simplify
   local wall_x, wall_y = self[x][y].neighbour_walls[dir].x, self[x][y].neighbour_walls[dir].y
   if dir == Direction.NORTH then
     if wall_y == y-1 then

@@ -11,6 +11,19 @@ local Cell = {
 }
 
 Cell.__index = Cell
+
+Cell.stringify = function(self,uniform_print)
+  if not uniform_print then
+    return self:tostring()
+  end
+  local min_val = ObjectType._NUM_OBJS
+  for k,v in pairs(self.object_counts) do
+    if v > 0 and k < min_val then
+      min_val = k
+    end
+  end
+  return ObjectCharInv[min_val]
+end
 Cell.__tostring = function(self)
   local res = ""
   for k,v in pairs(self.object_counts) do
@@ -34,18 +47,37 @@ function Cell:new(o)
   return o
 end
 
+function Cell:add_item()
+    assert(not self:is_wall(), string.format("cannot place item at wall (%d,%d)", self.x, self.y))
+    self.object_counts[ObjectType.ITEM] = (self.object_counts[ObjectType.ITEM] or 0) + 1
+end
+
+function Cell:add_start()
+    assert(not self:is_wall(), string.format("cannot place start/end at wall at pos (%d,%d)", self.x, self.y))
+    self.object_counts[ObjectType.START] = 1
+end
+
+function Cell:add_end()
+    assert(not self:is_wall(), string.format("cannot place end at wall at pos (%d,%d)", self.x, self.y))
+    self.object_counts[ObjectType.END] = 1
+end
+
+function Cell:add_wall()
+    assert(not self:is_non_wall(), string.format("cannot place wall at pos (%d,%d)", self.x, self.y))
+    self.object_counts[ObjectType.WALL] = 1
+end
+
 function Cell:add_object(o)
   if o == ObjectType.EMPTY then
     return
-  elseif o == ObjectType.START or o == ObjectType.END then
-    assert(not self:is_wall(), string.format("cannot place start/end at wall at pos (%d,%d)", self.x, self.y))
-    self.object_counts[o] = 1
+  elseif o == ObjectType.START then
+    self:add_start()
+  elseif o == ObjectType.END then
+    self:add_end()
   elseif o == ObjectType.WALL then
-    assert(not self:is_non_wall(), string.format("cannot place wall at pos (%d,%d)", self.x, self.y))
-    self.object_counts[o] = 1
+    self:add_wall()
   elseif o == ObjectType.ITEM then
-    assert(not self:is_wall(), string.format("cannot place item at wall (%d,%d)", self.x, self.y))
-    self.object_counts[o] = (self.object_counts[o] or 0) + 1
+    self:add_item()
   end
 end
 
