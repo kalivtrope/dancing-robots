@@ -142,9 +142,18 @@ function Game:new(file)
     -- `width`
     -- `height`  parameters to Maze:new()
   local type_str = file:read("*line")
+  if not type_str then
+    error("no game type found! please check the input file", 2)
+  end
   local height, width = file:read("*n", "*n")
+  if type(height) ~= "number" or type(width) ~= "number" then
+    error(string.format("invalid dimensions (got height = '%s', width = '%s'), refusing to continue", height, width))
+  end
   local maze_str = file:read("*all")
   local game_type_key = string.upper(type_str)
+  if not GameType[game_type_key] then
+    error(string.format("unknown game type '%s', refusing to continue", type_str), 2)
+  end
   --assert(GameType[game_type_key], _ENV.string.format("unknown game type '%s'", params.type_str))
   local o = { type = GameType[game_type_key], result = {type = GameResult.NONE, message = ""}, }
   setmetatable(o, self)
