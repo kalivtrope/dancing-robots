@@ -120,7 +120,7 @@ end
 
 function Game:move_to_end(instruction_no)
   -- if there's no end in the robot's direction, this command follows the behaviour of self:move_to_wall
-  local x,y,success = self.maze:move_to_start(self.robot_state.x, self.robot_state.y, self.robot_state.orientation)
+  local x,y,success = self.maze:move_to_end(self.robot_state.x, self.robot_state.y, self.robot_state.orientation)
   if success == false then
     self:report_warning_wall(instruction_no, Tokens.MOVETOEND, "end")
   end
