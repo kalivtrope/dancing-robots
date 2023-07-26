@@ -1,11 +1,12 @@
 local ObjectChar
 
 local ObjectType = {
-  EMPTY = 1,
+  END = 1,
   START = 2,
-  END = 3,
+  ITEM = 3,
   WALL = 4,
-  ITEM = 5,
+  EMPTY = 5,
+  _NUM_OBJS = 5,
   from_char = function(c)
     if not ObjectChar[c] then
       error(string.format("unknown object type '%s'", c), 2)

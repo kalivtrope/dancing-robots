@@ -13,6 +13,7 @@ local Game = {
   type = GameType.NONE,
   robot_state = nil,
   code = nil,
+  uniform_cell_print=true,
 }
 
 Game.__tostring = function(self)
@@ -20,10 +21,12 @@ Game.__tostring = function(self)
   for y=1,self.maze.height do
     for x=1,self.maze.width do
       local robot_str = ""
+      local cell_data = self.maze[x][y]:stringify(self.uniform_cell_print)
       if x==self.robot_state.x and y==self.robot_state.y then
         robot_str = string.sub("nesw", self.robot_state.orientation, self.robot_state.orientation)
       end
-      res = res .. robot_str .. tostring(self.maze[x][y]) .. " "
+      if self.uniform_cell_print and #robot_str > 0 then cell_data = "" end
+      res = res .. robot_str .. cell_data .. " "
     end
     res = res .. "\n"
   end
