@@ -53,6 +53,7 @@ return {
     MATRIX = 'matrix',
     MAZE = 'maze',
     SORT = 'sort',
+    SORTP = 'sortp',
   },
   GameResult = {
     NONE = 1,
