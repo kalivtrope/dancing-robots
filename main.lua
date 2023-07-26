@@ -7,7 +7,10 @@ local judge = require("problemset."..int.game.type..".judge"):attach_to_interpre
 
 while true do
   judge:judge_next_command()
-  if judge.judgment_received then break end
+  if judge.judgment_received then
+    print(judge.judgment_success and "SUCCESS" or "FAIL: "..judge.judgment_verdict)
+    break
+  end
   io.write(judge.interpreter.instruction_no .. " " .. judge.interpreter:last_command_executed().."\n")
   io.write(tostring(judge.interpreter.game))
   os.execute("sleep 0.1")

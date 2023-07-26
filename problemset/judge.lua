@@ -1,7 +1,11 @@
 local Judge = {
   judgment_received = false,
-  judgment_success = false,
+  judgment_success = true,
   judgment_verdict = nil,
+  interpreter = nil,
+  game = nil,
+  maze = nil,
+  robot_state = nil,
 }
 Judge.__index = Judge
 
@@ -11,9 +15,39 @@ function Judge:new(o)
   return o
 end
 
+function Judge:add_verdict(msg)
+  self.judgment_verdict = (self.judgment_verdict or "") .. msg .. "\n"
+end
+
+function Judge:add_judgment(flag)
+  self.judgment_success = self.judgment_success and flag
+end
+
+function Judge:test_if_robot_survived()
+  if self.interpreter.error_encountered then
+    self:add_verdict("robot crashed into a wall")
+    return false
+  end
+  return true
+end
+
+function Judge:test_if_robot_is_at_end()
+  local robot_x, robot_y = self.robot_state.x, self.robot_state.y
+  local end_x, end_y = self.maze.end_cell.x, self.maze.end_cell.y
+  local ans = robot_x == end_x and robot_y == end_y
+  if not ans then
+    self:add_verdict(string.format("robot ended at pos (%d,%d), should have been (%d,%d)",
+                                    robot_x, robot_y, end_x, end_y))
+  end
+  return ans
+end
+
 function Judge:attach_to_interpreter(interpreter)
   local o = {}
   o.interpreter = interpreter
+  o.game = o.interpreter.game
+  o.maze = o.game.maze
+  o.robot_state = o.game.robot_state
   setmetatable(o, self)
   return o
 end
