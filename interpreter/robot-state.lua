@@ -1,4 +1,4 @@
-local enums = require("enums")
+local enums = require("interpreter.enums")
 local Direction = enums.Direction
 
 local RobotState = {

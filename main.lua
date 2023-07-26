@@ -1,6 +1,4 @@
-package.path = "../?.lua;" .. package.path -- TODO: decide about execution path
-local Interpreter = require("interpreter")
---local MatrixJudge = require("problemset.matrix.judge")
+local Interpreter = require("interpreter.interpreter")
 
 local player_input, game_configuration = arg[1], arg[2]
 local int = Interpreter:new(player_input, game_configuration)

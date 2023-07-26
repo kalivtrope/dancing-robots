@@ -1,8 +1,8 @@
-local utils = require("utils")
+local utils = require("interpreter.utils")
 local write_stderr = utils.write_stderr
-local enums = require("enums")
+local enums = require("interpreter.enums")
 local Tokens = enums.Tokens
-local Game = require("game")
+local Game = require("interpreter.game")
 
 local Interpreter = {
   instruction_no = 0,

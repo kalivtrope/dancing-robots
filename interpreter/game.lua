@@ -1,7 +1,7 @@
-local enums = require("enums")
-local RobotState = require("robot-state")
-local Maze = require("maze")
-local utils = require("utils")
+local enums = require("interpreter.enums")
+local RobotState = require("interpreter.robot-state")
+local Maze = require("interpreter.maze")
+local utils = require("interpreter.utils")
 local write_stderr, assert_bounds = utils.write_stderr, utils.assert_bounds
 local GameType, GameResult, Tokens = enums.GameType, enums.GameResult, enums.Tokens
 
