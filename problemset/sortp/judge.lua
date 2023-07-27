@@ -1,7 +1,6 @@
 local Judge = require("problemset.judge")
 
 local SortpJudge = Judge:new()
-SortpJudge.__index = SortpJudge
 
 function SortpJudge:test_if_sorted()
   local error_encountered = false

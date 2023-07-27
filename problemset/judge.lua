@@ -48,6 +48,7 @@ function Judge:attach_to_interpreter(interpreter)
   o.game = o.interpreter.game
   o.maze = o.game.maze
   o.robot_state = o.game.robot_state
+  self.__index = self
   setmetatable(o, self)
   return o
 end
