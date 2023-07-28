@@ -2,6 +2,9 @@ local Graph = {}
 Graph.__index = Graph
 
 function Graph:new(n)
+  if type(n) ~= "number" or n < 0 then
+    error(string.format("invalid value for n: %s (expected a non-negative number)", n), 2)
+  end
   local o = {}
   o.n = n
   o.m = 0
@@ -9,15 +12,25 @@ function Graph:new(n)
   return o
 end
 
-function Graph:add_edge(u, v)
+function Graph:add_edge_uni(u, v)
+  self[u] = self[u] or {}
+  if type(self[u][v]) == "number" then return false end
   local weight = 1
+  self[u][v] = weight
+  self.m = self.m + 1
+  return true
+end
+
+function Graph:get_edge(u, v)
+  return self[u] and self[u][v]
+end
+
+function Graph:add_edge(u, v)
   self[u] = self[u] or {}
   self[v] = self[v] or {}
   if type(self[u][v]) == "number" or type(self[v][u]) == "number" then return false end
-  self[u][v] = weight
-  self[v][u] = weight
-  self.m = self.m + 1
-  return true
+  return self:add_edge_uni(u, v) and (v == u or self:add_edge_uni(v, u))
+
 end
 
 function Graph:remove_edge(u, v)
@@ -61,7 +74,7 @@ function Graph:shortest_path(s, t)
 end
 
 function Graph.new_random_tree(n, seed)
-  math.randomseed(seed or 42)
+  math.randomseed(seed)
   local graph = Graph:new(n)
   for i=2,n do
     assert(graph:add_edge(i, math.random(i-1)))
@@ -72,8 +85,9 @@ end
 function Graph.new_random_component(n, m, seed)
   if m < n-1 then error("not enough edges for a connected graph", 2) end
   if 2*m > 2*n+n*(n-1) then error("too many edges for a connected graph", 2) end
-  math.randomseed(seed or 42)
-  local graph = Graph.new_random_tree(n)
+  seed = seed or 42
+  math.randomseed(seed)
+  local graph = Graph.new_random_tree(n, seed)
   m = m - n + 1
   for _=1,m do
     local fin = false

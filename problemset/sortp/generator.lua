@@ -40,7 +40,8 @@ local function fill_diagonal_from_pos(grid, start_x, start_y, lim_x, lim_y)
 end
 
 
-function SortpGenerator.generate(n, perm, seed)
+function SortpGenerator.generate(params)
+  local n = params.n
   if type(n) ~= "number" or n < 2 then return nil end
   -- n >= 2: length of the input permutation
     -- the resulting grid will have dimensions (2n+2)x(2n+2)
@@ -48,8 +49,9 @@ function SortpGenerator.generate(n, perm, seed)
   local gen = SortpGenerator:new()
   gen:init("sortp", total_n, total_n)
   gen:add_borders()
-  seed = seed or 42
+  local seed = params.seed or 42
   math.randomseed(seed)
+  local perm = params.perm
   if not perm then
   repeat
     perm = generate_permutation(n)
@@ -70,9 +72,9 @@ function SortpGenerator.generate(n, perm, seed)
   return tostring(gen)
 end
 
---[[ Example usage:
+---[[ Example usage:
 local seed = nil --or os.time()
-io.write(generate(8,nil,seed))
+io.write(SortpGenerator.generate({n=10, perm=nil, seed=seed}))
 --io.write(seed, "\n")
 --]]
 
