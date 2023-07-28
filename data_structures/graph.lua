@@ -60,8 +60,8 @@ function Graph:shortest_path(s, t)
           next[#next+1] = v
         end
       end
-      curr, next = next, {}
     end
+    curr, next = next, {}
   end
   local v = t
   while v ~= s do
