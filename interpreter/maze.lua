@@ -198,9 +198,6 @@ function Maze:move_to_item(x, y, dir)
   -- TODO: simplify
   local wall_x, wall_y = self[x][y].neighbour_walls[dir].x, self[x][y].neighbour_walls[dir].y
   if dir == Direction.NORTH then
-    if wall_y == y-1 then
-      return nil,nil,false,true
-    end
     local item_y = self.item_cols[x]:left(y)
     if wall_y > item_y then
       return x,wall_y+1,false,false
@@ -210,9 +207,6 @@ function Maze:move_to_item(x, y, dir)
     end
     return x,item_y,true,false
   elseif dir == Direction.EAST then
-    if wall_x == x+1 then
-      return nil,nil,false,true
-    end
     local item_x = self.item_rows[y]:right(x)
     if wall_x < item_x then
       return wall_x-1,y,false,false
@@ -222,9 +216,6 @@ function Maze:move_to_item(x, y, dir)
     end
     return item_x,y,true,false
   elseif dir == Direction.SOUTH then
-    if wall_y == y+1 then
-      return nil,nil,false,true
-    end
     local item_y = self.item_cols[x]:right(y)
     if wall_y < item_y then
       return x,wall_y-1,false,false
@@ -234,9 +225,6 @@ function Maze:move_to_item(x, y, dir)
     end
     return x,item_y,true,false
   elseif dir == Direction.WEST then
-    if wall_x == x-1 then
-      return nil,nil,false,true
-    end
     local item_x = self.item_rows[y]:left(x)
     if wall_x > item_x then
       return wall_x+1,y,false,false

@@ -60,8 +60,8 @@ y/x 1  2  3 4 5 6   7   8
   - Karel drops ONE item at the current position from his inventory
   - if Karel's inventory is empty, this command functions as a `NOP` except that you get a warning in stderr (which you can safely ignore if you don't care)
 - `MOVE_TO_ITEM`
-  - first off, Karel makes one step in the direction of his current orientation
-    - this is so the robot doesnt get stuck on a single item with `collect`ing it being the only way out of the current position
+ - if there's a wall somewhere between Karel and the closest item in his direction, this command functions as `MOVE_TO_WALL`
+  - otherwise Karel makes at least one step in the direction of his current orientation and stops at the closest item detected underneath him
 ```
 # #  # # # # #                  # # #  # # # #
 # .  I . . . #                  # . I  . . . #
@@ -69,15 +69,6 @@ y/x 1  2  3 4 5 6   7   8
 # .  . . . . #                  # . .  . . . #
 # #  # # # # #                  # # #  # # # #
 ```
-    - **THIS WILL RESULT IN A GAME OVER** if Karel is exactly one step away from a wall
-```
-# # # # #
-# . I . #
-# . # . # -> MOVETOITEM -> (GAME OVER)
-# . n . #
-# # # # #
-```
- - if Karel survives but there's no item in the current direction or if there's a wall somewhere between Karel and the item, this command functions as `MOVE_TO_WALL`
 ```
 # # # # #                  # # # # #
 # . # . #                  # . # . #
@@ -144,7 +135,6 @@ sortp
 - there is always precisely one start and one end
 - each cell either is a wall or has wall neighbours in all 4 directions
 - cell type order is arbitrary
-- Example:
 
 ### Output file format
 - sequence of commands that the robot shall execute in the order given in this file
