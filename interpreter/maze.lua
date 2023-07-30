@@ -106,6 +106,21 @@ local function init_item_rows(num_rows, row_width)
   return res
 end
 
+local function next_item_in_dir(self, x, y, dir)
+  if dir == Direction.NORTH then
+    return x, self.item_cols[x]:left(y)
+  elseif dir == Direction.EAST then
+    return self.item_rows[y]:right(x), y
+  elseif dir == Direction.SOUTH then
+    return x, self.item_cols[x]:right(y)
+  elseif dir == Direction.WEST then
+    return self.item_rows[y]:left(x),y
+  else
+    error("unknown direction " .. dir, 2)
+  end
+
+end
+
 local function maze_from_str(maze_str, height, width)
   assert(type(maze_str) == 'string', string.format("maze_str must be a string (got type '%s')", type(maze_str)))
   local item_rows = init_item_rows(height, width)
@@ -195,46 +210,15 @@ function Maze:drop(x, y)
 end
 
 function Maze:move_to_item(x, y, dir)
-  -- TODO: simplify
-  local wall_x, wall_y = self[x][y].neighbour_walls[dir].x, self[x][y].neighbour_walls[dir].y
-  if dir == Direction.NORTH then
-    local item_y = self.item_cols[x]:left(y)
-    if wall_y > item_y then
-      return x,wall_y+1,false,false
-    end
-    if item_y < 1 or item_y > self.height then
-      error("maze is missing borders", 2)
-    end
-    return x,item_y,true,false
-  elseif dir == Direction.EAST then
-    local item_x = self.item_rows[y]:right(x)
-    if wall_x < item_x then
-      return wall_x-1,y,false,false
-    end
-    if item_x < 1 or item_x > self.width then
-      error("maze is missing borders", 2)
-    end
-    return item_x,y,true,false
-  elseif dir == Direction.SOUTH then
-    local item_y = self.item_cols[x]:right(y)
-    if wall_y < item_y then
-      return x,wall_y-1,false,false
-    end
-    if item_y < 1 or item_y > self.height then
-      error("maze is missing borders", 2)
-    end
-    return x,item_y,true,false
-  elseif dir == Direction.WEST then
-    local item_x = self.item_rows[y]:left(x)
-    if wall_x > item_x then
-      return wall_x+1,y,false,false
-    end
-    if item_x < 1 or item_x > self.width then
-      error("maze is missing borders", 2)
-    end
-    return item_x,y,true,false
+  local wall_x, wall_y = one_block_before(self[x][y].neighbour_walls[dir].x, self[x][y].neighbour_walls[dir].y, dir)
+  local item_x, item_y = next_item_in_dir(x, y, dir)
+  if item_x < 1 or item_x > self.width or item_y < 1 or item_y > self.height then
+    error("maze is missing borders", 2)
+  end
+  if is_closer(x,y,item_x,item_y,wall_x,wall_y,dir) then
+    return item_x,item_y,false,false
   else
-    error("unknown direction " .. dir, 2)
+    return wall_x,wall_y,true,false
   end
 end
 
@@ -263,6 +247,7 @@ local function reachable_from_pos(src_x, src_y, dst_x, dst_y, dir)
 end
 
 local function is_closer(src_x, src_y, a_x, a_y, b_x, b_y, dir)
+  -- returns true if (a_x,b_x) is closer or at the same distance from (src_x,src_y) than (b_x,b_y)
   assert(reachable_from_pos(src_x, src_y, a_x, a_y, dir))
   assert(reachable_from_pos(src_x, src_y, b_x, b_y, dir))
   local d_ax, d_ay = normalize_delta(a_x-src_x,a_y-src_y)
