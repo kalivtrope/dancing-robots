@@ -12,8 +12,11 @@ function MatrixGenerator.generate(params)
   local seed = params.seed or 42
   local total_n = params.n+2
   math.randomseed(seed)
-  local m = params.m or math.random(n-1,math.min(4*n, n*(n-1)//2-1))
+  local m = params.m or math.random(2*n-1,math.min(4*n, n*(n-1)//2-1))
   local graph = Graph.new_random_component(n, m, seed)
+  for i=1,n do
+    graph:add_edge(i, i)
+  end
   local gen = MatrixGenerator:new()
   gen:init("matrix", total_n, total_n)
   gen:add_borders()

@@ -77,14 +77,17 @@ function Graph.new_random_tree(n, seed)
   math.randomseed(seed)
   local graph = Graph:new(n)
   for i=2,n do
-    assert(graph:add_edge(i, math.random(i-1)))
+    local other = math.random(i-1)
+    if i ~= other then
+      assert(graph:add_edge(i, other))
+    end
   end
   return graph
 end
 
 function Graph.new_random_component(n, m, seed)
   if m < n-1 then error("not enough edges for a connected graph", 2) end
-  if 2*m > 2*n+n*(n-1) then error("too many edges for a connected graph", 2) end
+  if 2*m > n*(n-1) then error("too many edges for a connected graph", 2) end
   seed = seed or 42
   math.randomseed(seed)
   local graph = Graph.new_random_tree(n, seed)
@@ -93,7 +96,7 @@ function Graph.new_random_component(n, m, seed)
     local fin = false
     while not fin do
       local u, v = math.random(n), math.random(n)
-      fin = graph:add_edge(u, v)
+      fin = graph:add_edge(u, v) and u ~= v
     end
   end
   return graph
