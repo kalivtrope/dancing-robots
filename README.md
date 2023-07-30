@@ -285,12 +285,12 @@ sortp
 #### Find shortest path in graph given its adjacency matrix (`matrix`)
 - let `n >= 3` be a positive integer
 - let there be an undirected unweighted graph `G=({1..n},E)`
-  - the graph may contain self-loops
+  - every vertex of the graph contains a self-loop
 - the problem is encoded in the grid as follows:
   - the grid has a square shape of `(n+2)x(n+2)` cells
   - there are solid walls on all of its 4 borders (so there is a solid left,right,bottom,top wall line)
   - the top-left-most non-wall cell is at row 1, column 1
-  - column number increases by moving east, row number increase`s by moving south
+  - column number increases by moving east, row number increases by moving south
   - there is an edge `e=(u,v)` in `E` if and only if there is an item at row `u`, column `v`
     - since the graph is undirected, there also exists an edge `e'=(v,u)` opposite to the edge `e`
 - both start and end are placed in the same position `(row, column): (r,s)`
