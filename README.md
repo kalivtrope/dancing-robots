@@ -9,11 +9,11 @@
 - example: `lua main.lua problemset/sortp/example_n5.in problemset/sortp/example_n5.out`
 ## Problem statement
 ### Lore
-- Karel is a descendant of the Great [Hrochobot](https://ksp.mff.cuni.cz/sksp/2006J/hrochobot/)
+- Eralk is a descendant of the Great [Hrochobot](https://ksp.mff.cuni.cz/sksp/2006J/hrochobot/)
     - (his mother's origins are unknown)
-- he does't know how to count (not even to one), but he does have obstacle and item sensors which help him move around the environment
+- he does't know how to count (not even to one), but he does have obstacle and item sensors on him which help him move around the environment
   - (so he actually does count (on his sensors))
-- Karel's purpose is to be placed in a maze, move a couple of items around and then head back to the end without destroying himself
+- Eralk's purpose is to be placed in a maze, move a couple of items around and then head back to the end without destroying himself
 
 ### Internal coordinate representation
 - when seeing certain errors, you will encounter the coordinates in this format unless stated otherwise (e.g. the game reports an error specifying a graph edge)
@@ -38,9 +38,9 @@ row/col 1  2  3 4 5 6   7   8
 - moving `East` increases the `x` (`col`) coordinate of the robot
 - moving `South` increases the `y` (`row`) coordinate of the robot
 - moving `West` decreases the `x` (`col`) coordinate of the robot
-- Karel's default orientation is to `North`
+- Eralk's default orientation is to `North`
 ### Robot commands
-- in the following examples, Karel is marked as one of `nesw` denoting his orientation in the grid
+- in the following examples, Eralk is marked as one of `nesw` denoting his orientation in the grid
 - start and end cells are omitted for better alignment and readability
 - `TURN_LEFT`
   - formally, this command changes the robot's orientation like this (the format is `Old orientation -> New orientation`): `North -> West, West -> South, South -> East, East -> North`
@@ -54,14 +54,14 @@ row/col 1  2  3 4 5 6   7   8
 - `TURN_RIGHT`
   - inverse operation to the `TURN_LEFT` command
 - `COLLECT`
-  - this command makes Karel collect ONE item at the current position and adds it to Karel's inventory
+  - this command makes Eralk collect ONE item at the current position and adds it to Eralk's inventory
   - if there's no item to be collected, this command functions as a `NOP` except that you get a warning in stderr (which you can safely ignore if you don't care)
 - `DROP`
-  - Karel drops ONE item at the current position from his inventory
-  - if Karel's inventory is empty, this command functions as a `NOP` except that you get a warning in stderr (which you can safely ignore if you don't care)
+  - Eralk drops ONE item at the current position from his inventory
+  - if Eralk's inventory is empty, this command functions as a `NOP` except that you get a warning in stderr (which you can safely ignore if you don't care)
 - `MOVE_TO_ITEM`
- - if there's a wall somewhere between Karel and the closest item in his direction, this command functions as `MOVE_TO_WALL`
-  - otherwise Karel makes at least one step in the direction of his current orientation and stops at the closest item detected underneath him
+ - if there's a wall somewhere between Eralk and the closest item in his direction, this command functions as `MOVE_TO_WALL`
+  - otherwise Eralk makes at least one step in the direction of his current orientation and stops at the closest item detected underneath him
 ```
 # #  # # # # #                  # # #  # # # #
 # .  I . . . #                  # . I  . . . #
@@ -90,16 +90,16 @@ row/col 1  2  3 4 5 6   7   8
 ```
 
 - `MOVE_TO_WALL`
-  - move in the current direction until there's a wall one step away from Karel
-  - in this command Karel makes ZERO or more steps (that is, he may not need to move at all if standing in front of a wall already)
+  - move in the current direction until there's a wall one step away from Eralk
+  - in this command Eralk makes ZERO or more steps (that is, he may not need to move at all if standing in front of a wall already)
 - `MOVE_TO_START`
-  - makes Karel move in the current direction until he's standing at a cell marked as start `S`
+  - makes Eralk move in the current direction until he's standing at a cell marked as start `S`
   - if there's no start in the current direction, this command functions as `MOVE_TO_WALL`
-  - in this command Karel makes ZERO or more steps (that is, he may not need to move at all if standing on start already)
+  - in this command Eralk makes ZERO or more steps (that is, he may not need to move at all if standing on start already)
 - `MOVE_TO_END`
-  - makes Karel move in the current direction until he's standing at a cell marked as end `E`
+  - makes Eralk move in the current direction until he's standing at a cell marked as end `E`
   - if there's no start in the current direction, this command functions as `MOVE_TO_WALL`
-  - in this command Karel makes ZERO or more steps (that is, he may not need to move at all if standing on end already)
+  - in this command Eralk makes ZERO or more steps (that is, he may not need to move at all if standing on end already)
 - `NOP`
   - it does absolutely nothing lol
 ### Input file description
@@ -170,7 +170,7 @@ sortp
     - this diagonal continues in the bottom-right direction all the way until it hits a border wall
   - the start is placed at position column 2, row 2 (the bottom-left-most non-wall position)
   - the start is placed at position column `2n+1`, row `2n+1` (the top-right-most non-wall position)
-- Karel's task is to rearrange the items so that the grid represents a sequnce `1,2,...,n`
+- Eralk's task is to rearrange the items so that the grid represents a sequnce `1,2,...,n`
 - see `problemset/sortp/*.out` to see how these configurations may be achieved
 ##### Example input (n=4,p=(1,3,4,2)) (problemset/sortp/example_n4.in)
 ```
