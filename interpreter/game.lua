@@ -18,11 +18,11 @@ local Game = {
 
 Game.__tostring = function(self)
   local res = ""
-  for y=1,self.maze.height do
-    for x=1,self.maze.width do
+  for row=1,self.maze.height do
+    for col=1,self.maze.width do
       local robot_str = ""
-      local cell_data = self.maze[x][y]:stringify(self.uniform_cell_print)
-      if x==self.robot_state.x and y==self.robot_state.y then
+      local cell_data = self.maze[row][col]:stringify(self.uniform_cell_print)
+      if row==self.robot_state.row and col==self.robot_state.col then
         robot_str = string.sub("nesw", self.robot_state.orientation, self.robot_state.orientation)
       end
       if self.uniform_cell_print and #robot_str > 0 then cell_data = "" end
@@ -59,7 +59,7 @@ function Game:turn_right()
 end
 
 function Game:collect(instruction_no)
-  local collect_successful = self.maze:collect(self.robot_state.x, self.robot_state.y)
+  local collect_successful = self.maze:collect(self.robot_state.row, self.robot_state.col)
   if collect_successful == true then
     self.robot_state:collect()
   else
@@ -72,62 +72,54 @@ function Game:drop(instruction_no)
     self:report_warning(instruction_no, Tokens.DROP, "attempted to drop from an empty inventory")
     return
   end
-  self.maze:drop(self.robot_state.x, self.robot_state.y)
+  self.maze:drop(self.robot_state.row, self.robot_state.col)
 end
 
 function Game:move_to_item(instruction_no)
   -- if there's no item in the robot's direction, this command follows the behaviour of self:move_to_wall
 
-  -- NOTE: since robot is guaranteed to make at least one step in here,
-  -- it is possible to crash into a wall if standing directly in front of it
-  local x,y,success,err = self.maze:move_to_item(self.robot_state.x, self.robot_state.y, self.robot_state.orientation)
-  if err == true then
-    self:report_error(instruction_no, Tokens.MOVETOITEM, "attempted to move to item but instead crashed into a wall")
-    return
-  end
+  local row,col,success = self.maze:move_to_item(self.robot_state.row,
+                                                 self.robot_state.col,
+                                                 self.robot_state.orientation)
   if success == false then
     self:report_warning_wall(instruction_no, Tokens.MOVETOITEM, "item")
   end
-  self.robot_state.x, self.robot_state.y = x, y
-  --print("move_to_item", x, y)
-  assert_bounds(self.robot_state.x, "robot_state.x", 1, self.maze.width)
-  assert_bounds(self.robot_state.y, "robot_state.y", 1, self.maze.height)
+  self.robot_state.row, self.robot_state.col = row, col
+  assert_bounds(self.robot_state.row, "robot_state.row", 1, self.maze.height)
+  assert_bounds(self.robot_state.col, "robot_state.col", 1, self.maze.width)
 end
 
 function Game:move_to_wall(instruction_no)
-  local x,y,success = self.maze:move_to_wall(self.robot_state.x, self.robot_state.y, self.robot_state.orientation)
+  local row,col,success = self.maze:move_to_wall(self.robot_state.row, self.robot_state.col, self.robot_state.orientation)
   if success == false then -- this shouldn't happen on well-defined grids
       self:report_error(instruction_no, Tokens.MOVETOWALL, "attempted to move to wall but instead exited the maze")
       error("maze is missing borders", 2)
   end
-  self.robot_state.x, self.robot_state.y = x, y
-  --print("move_to_wall", x, y)
-  assert_bounds(self.robot_state.x, "robot_state.x", 1, self.maze.width)
-  assert_bounds(self.robot_state.y, "robot_state.y", 1, self.maze.height)
+  self.robot_state.row, self.robot_state.col = row, col
+  assert_bounds(self.robot_state.row, "robot_state.row", 1, self.maze.height)
+  assert_bounds(self.robot_state.col, "robot_state.col", 1, self.maze.width)
 end
 
 function Game:move_to_start(instruction_no)
   -- if there's no start in the robot's direction, this command follows the behaviour of self:move_to_wall
-  local x,y,success = self.maze:move_to_start(self.robot_state.x, self.robot_state.y, self.robot_state.orientation)
+  local row,col,success = self.maze:move_to_start(self.robot_state.row, self.robot_state.col, self.robot_state.orientation)
   if success == false then
     self:report_warning_wall(instruction_no, Tokens.MOVETOSTART, "start")
   end
-  self.robot_state.x, self.robot_state.y = x, y
-  --print("move_to_start", x, y)
-  assert_bounds(self.robot_state.x, "robot_state.x", 1, self.maze.width)
-  assert_bounds(self.robot_state.y, "robot_state.y", 1, self.maze.height)
+  self.robot_state.row, self.robot_state.col = row, col
+  assert_bounds(self.robot_state.row, "robot_state.row", 1, self.maze.height)
+  assert_bounds(self.robot_state.col, "robot_state.col", 1, self.maze.width)
 end
 
 function Game:move_to_end(instruction_no)
   -- if there's no end in the robot's direction, this command follows the behaviour of self:move_to_wall
-  local x,y,success = self.maze:move_to_end(self.robot_state.x, self.robot_state.y, self.robot_state.orientation)
+  local row,col,success = self.maze:move_to_end(self.robot_state.row, self.robot_state.col, self.robot_state.orientation)
   if success == false then
     self:report_warning_wall(instruction_no, Tokens.MOVETOEND, "end")
   end
-  self.robot_state.x, self.robot_state.y = x, y
-  --print("move_to_end", x, y)
-  assert_bounds(self.robot_state.x, "robot_state.x", 1, self.maze.width)
-  assert_bounds(self.robot_state.y, "robot_state.y", 1, self.maze.height)
+  self.robot_state.row, self.robot_state.col = row, col
+  assert_bounds(self.robot_state.row, "robot_state.row", 1, self.maze.height)
+  assert_bounds(self.robot_state.col, "robot_state.col", 1, self.maze.width)
 end
 
 function Game:nop()
@@ -158,7 +150,7 @@ function Game:new(file)
   local o = { type = GameType[game_type_key], result = {type = GameResult.NONE, message = ""}, }
   setmetatable(o, self)
   o.maze = Maze:new({maze_str = maze_str, width=width, height=height})
-  o.robot_state = RobotState:new{x = o.maze.start_cell.x, y = o.maze.start_cell.y}
+  o.robot_state = RobotState:new{row = o.maze.start_cell.row, col = o.maze.start_cell.col }
   return o
 end
 

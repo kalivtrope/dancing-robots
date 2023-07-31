@@ -7,13 +7,13 @@ Generator.__index = Generator
 Generator.__tostring = function(self)
   local res = self.game_type .. "\n"
     .. self.height .. " " .. self.width .. "\n"
-  for y=1,self.height do
-    local row = ""
-    for x=1,self.width do
-      if x > 1 then row = row .. " " end
-      row = row .. tostring(self.grid[x][y])
+  for row=1,self.height do
+    local row_str = ""
+    for col=1,self.width do
+      if col > 1 then row_str = row_str .. " " end
+      row_str = row_str .. tostring(self.grid[row][col])
     end
-    res = res .. row .. "\n"
+    res = res .. row_str .. "\n"
   end
   return res
 end
@@ -28,28 +28,28 @@ end
 
 function Generator:add_borders()
   for i=1,math.max(self.height, self.width) do
-    self.grid[1][i]:add_wall()
+    self.grid[i][1]:add_wall()
     if i ~= 1 then
-      self.grid[i][1]:add_wall()
+      self.grid[1][i]:add_wall()
     end
     if i <= self.height then
-      self.grid[self.width][i]:add_wall()
+      self.grid[i][self.width]:add_wall()
     end
     if i <= self.width then
-      self.grid[i][self.height]:add_wall()
+      self.grid[self.height][i]:add_wall()
     end
   end
 end
 
-function Generator:init(game_type, width, height)
+function Generator:init(game_type, height, width)
   self.game_type = game_type
-  self.width = width
   self.height = height
+  self.width = width
   self.grid = {}
-  for x=1,width do
-    self.grid[x] = self.grid[x] or {}
-    for y=1,height do
-      self.grid[x][y] = Cell:new({x=x, y=y})
+  for row=1,height do
+    self.grid[row] = self.grid[row] or {}
+    for col=1,width do
+      self.grid[row][col] = Cell:new({row=row, col=col})
     end
   end
 end

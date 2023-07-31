@@ -42,11 +42,11 @@ return {
       return (dir + 1) % 4 + 1
     end,
     dir_delta = function(dir)
-      local x, y = 0,-1 -- north delta
+      local row, col = -1,0 -- north delta
       for _=2,dir do
-        x,y = -y,x
+        row,col = col,-row
       end
-      return x,y
+      return row,col
     end
   },
   GameType = {

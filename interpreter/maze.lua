@@ -18,9 +18,9 @@ local Maze = {
 Maze.__index = Maze
 Maze.__tostring = function(self)
   local res = ""
-  for y=1,self.height do
-    for x=1,self.width do
-      res = res .. tostring(self[x][y]) .. " "
+  for row=1,self.height do
+    for col=1,self.width do
+      res = res .. tostring(self[row][col]) .. " "
     end
     res = res .. "\n"
   end
@@ -106,17 +106,17 @@ local function init_item_rows(num_rows, row_width)
   return res
 end
 
-local function next_item_in_dir(self, x, y, dir)
+local function next_item_in_dir(self, row, col, dir)
   if dir == Direction.NORTH then
-    return x, self.item_cols[x]:left(y)
+    return self.item_cols[col]:left(row), col
   elseif dir == Direction.EAST then
-    return self.item_rows[y]:right(x), y
+    return row, self.item_rows[row]:right(col)
   elseif dir == Direction.SOUTH then
-    return x, self.item_cols[x]:right(y)
+    return self.item_cols[col]:right(row), col
   elseif dir == Direction.WEST then
-    return self.item_rows[y]:left(x),y
+    return row,self.item_rows[row]:left(col)
   else
-    error("unknown direction " .. dir, 2)
+    error("unknown direction " .. tostring(dir), 2)
   end
 
 end
@@ -126,34 +126,34 @@ local function maze_from_str(maze_str, height, width)
   local item_rows = init_item_rows(height, width)
   local item_cols = init_item_rows(width, height)
   local maze = { height = height, width = width, item_rows=item_rows, item_cols = item_cols }
-  local y = 1
+  local row = 1
   local last_wall_up = {}
   --local last_item_up = {}
   for line in (maze_str .. '\n'):gmatch('(.-)\r?\n') do
     --print(line)
     local last_wall_left = nil
     --local last_item_left = nil
-    local x = 1
+    local col = 1
     local line_has_data = false
     for cell_data in line:gmatch('[#ISE%.]+') do
       line_has_data = true
-      local cell = Cell:new {x=x, y=y}
+      local cell = Cell:new {row=row, col=col}
       for object_char in cell_data:gmatch('.') do
         local object_type = ObjectType.from_char(object_char)
         cell:add_object(object_type)
       end
 
-      if not maze[x] then
-        maze[x] = {}
+      if not maze[row] then
+        maze[row] = {}
       end
-      maze[x][y] = cell
+      maze[row][col] = cell
 
       cell:add_neighbour_wall(last_wall_left, Direction.WEST)
-      cell:add_neighbour_wall(last_wall_up[x], Direction.NORTH)
+      cell:add_neighbour_wall(last_wall_up[col], Direction.NORTH)
 
       if cell:is_item() then
-        item_rows[y]:add_item(x)
-        item_cols[x]:add_item(y)
+        item_rows[row]:add_item(col)
+        item_cols[col]:add_item(row)
       end
 
       if cell:is_start() then
@@ -164,21 +164,21 @@ local function maze_from_str(maze_str, height, width)
       end
 
       if cell:is_wall() then
-        for i=x-1,1,-1 do
-          maze[i][y]:add_neighbour_wall(cell, Direction.EAST)
-          if maze[i][y]:is_wall() then break end
+        for i=col-1,1,-1 do
+          maze[row][i]:add_neighbour_wall(cell, Direction.EAST)
+          if maze[row][i]:is_wall() then break end
         end
-        for i=y-1,1,-1 do
-          maze[x][i]:add_neighbour_wall(cell, Direction.SOUTH)
-          if maze[x][i]:is_wall() then break end
+        for i=row-1,1,-1 do
+          maze[i][col]:add_neighbour_wall(cell, Direction.SOUTH)
+          if maze[i][col]:is_wall() then break end
         end
         last_wall_left = cell
-        last_wall_up[x] = cell
+        last_wall_up[col] = cell
       end
-      x = x + 1
+      col = col + 1
     end
     if line_has_data then
-      y = y + 1
+      row = row + 1
     end
   end
   assert(maze.start_cell, "no start cell found in the maze")
@@ -186,90 +186,95 @@ local function maze_from_str(maze_str, height, width)
   return maze
 end
 
-local function move(x, y, dir)
-  local d_x, d_y = Direction.dir_delta(dir)
-  return x + d_x, y + d_y
+local function move(row, col, dir)
+  local d_row, d_col = Direction.dir_delta(dir)
+  return row + d_row, col + d_col
 end
 
-function Maze:collect(x, y)
-  local was_last_item = self[x][y]:count_items() == 1
+function Maze:collect(row, col)
+  local was_last_item = self[row][col]:count_items() == 1
   if was_last_item then
-    self.item_rows[y]:remove_item(x)
-    self.item_cols[x]:remove_item(y)
+    self.item_rows[row]:remove_item(col)
+    self.item_cols[col]:remove_item(row)
   end
-  return self[x][y]:remove_item()
+  return self[row][col]:remove_item()
 end
 
-function Maze:drop(x, y)
-  local was_first_item = self[x][y]:count_items() == 0
+function Maze:drop(row, col)
+  local was_first_item = self[row][col]:count_items() == 0
   if was_first_item then
-    self.item_rows[y]:add_item(x)
-    self.item_cols[x]:add_item(y)
+    self.item_rows[row]:add_item(col)
+    self.item_cols[col]:add_item(row)
   end
-  self[x][y]:add_item()
+  self[row][col]:add_item()
 end
 
-function Maze:move_to_item(x, y, dir)
-  local wall_x, wall_y = one_block_before(self[x][y].neighbour_walls[dir].x, self[x][y].neighbour_walls[dir].y, dir)
-  local item_x, item_y = next_item_in_dir(x, y, dir)
-  if item_x < 1 or item_x > self.width or item_y < 1 or item_y > self.height then
+local function one_block_before(row, col, dir)
+  return move(row, col, Direction.opposite_direction(dir))
+end
+
+local function normalize_delta(d_row,d_col)
+  return d_row ~= 0 and d_row // math.abs(d_row) or 0,
+         d_col ~= 0 and d_col // math.abs(d_col) or 0
+end
+
+local function reachable_from_pos(src_row, src_col, dst_row, dst_col, dir)
+  local diff_row, diff_col = normalize_delta(dst_row - src_row, dst_col - src_col)
+  local dir_row, dir_col = Direction.dir_delta(dir)
+  return dir_row == diff_row and dir_col == diff_col
+end
+
+
+
+local function is_closer(src_row, src_col, a_row, a_col, b_row, b_col, dir)
+  -- returns true if (a_row,a_col) is closer or at the same distance from (src_row,src_col) than (b_row,b_col)
+  assert(reachable_from_pos(src_row, src_col, a_row, a_col, dir))
+  assert(reachable_from_pos(src_row, src_col, b_row, b_col, dir))
+  local d_arow, d_acol = normalize_delta(a_row-src_row,a_col-src_col)
+  local d_brow, d_bcol = normalize_delta(b_row-src_row,b_col-src_col)
+  return math.abs(d_arow) <= math.abs(d_brow) and math.abs(d_acol) <= math.abs(d_bcol)
+end
+
+function Maze:move_to_item(row, col, dir)
+  local wall_row, wall_col = one_block_before(self[row][col].neighbour_walls[dir].row,
+                                              self[row][col].neighbour_walls[dir].col, dir)
+  local item_row, item_col = next_item_in_dir(self, row, col, dir)
+  if item_row < 1 or item_row > self.height or item_col < 1 or item_col > self.width then
     error("maze is missing borders", 2)
   end
-  if is_closer(x,y,item_x,item_y,wall_x,wall_y,dir) then
-    return item_x,item_y,false,false
+  if is_closer(row,col,item_row,item_col,wall_row,wall_col,dir) then
+    return item_row,item_col,true
   else
-    return wall_x,wall_y,true,false
+    return wall_row,wall_col,false
   end
 end
 
-local function one_block_before(x, y, dir)
-  return move(x, y, Direction.opposite_direction(dir))
-end
 
-function Maze:move_to_wall(x, y, dir)
-  local wall = self[x][y].neighbour_walls[dir]
+function Maze:move_to_wall(row, col, dir)
+  local wall = self[row][col].neighbour_walls[dir]
   if not wall then
     return nil,nil,nil
   end
-  local ret_x, ret_y = one_block_before(wall.x, wall.y, dir)
-  return ret_x,ret_y,true
+  local ret_row, ret_col = one_block_before(wall.row, wall.col, dir)
+  return ret_row,ret_col,true
 end
 
-local function normalize_delta(d_x, d_y)
-  return d_x ~= 0 and d_x // math.abs(d_x) or 0,
-         d_y ~= 0 and d_y // math.abs(d_y) or 0
-end
 
-local function reachable_from_pos(src_x, src_y, dst_x, dst_y, dir)
-  local diff_x, diff_y = normalize_delta(dst_x - src_x, dst_y - src_y)
-  local dir_x, dir_y = Direction.dir_delta(dir)
-  return dir_x == diff_x and dir_y == diff_y
-end
-
-local function is_closer(src_x, src_y, a_x, a_y, b_x, b_y, dir)
-  -- returns true if (a_x,b_x) is closer or at the same distance from (src_x,src_y) than (b_x,b_y)
-  assert(reachable_from_pos(src_x, src_y, a_x, a_y, dir))
-  assert(reachable_from_pos(src_x, src_y, b_x, b_y, dir))
-  local d_ax, d_ay = normalize_delta(a_x-src_x,a_y-src_y)
-  local d_bx, d_by = normalize_delta(b_x-src_x,b_y-src_y)
-  return math.abs(d_ax) <= math.abs(d_bx) and math.abs(d_ay) <= math.abs(d_by)
-end
-
-function Maze:move_to_pos(src_x, src_y, dst_x, dst_y, dir)
-  local wall_x, wall_y, success = self:move_to_wall(src_x, src_y, dir)
-  if reachable_from_pos(src_x, src_y, dst_x, dst_y, dir)
-    and (not success or is_closer(src_x, src_y, dst_x, dst_y, wall_x, wall_y, dir)) then
-    return dst_x, dst_y, true
+function Maze:move_to_pos(src_row, src_col, dst_row, dst_col, dir)
+  local wall_row, wall_col, success = self:move_to_wall(src_row, src_col, dir)
+  if reachable_from_pos(src_row, src_col, dst_row, dst_col, dir)
+    and (not success or is_closer(src_row, src_col, dst_row, dst_col, wall_row, wall_col, dir)) then
+    return dst_row, dst_col, true
   end
-  return wall_x, wall_y, false
+  return wall_row, wall_col, false
 end
 
-function Maze:move_to_start(x, y, dir)
-  return self:move_to_pos(x, y, self.start_cell.x, self.start_cell.y, dir)
+function Maze:move_to_start(row, col, dir)
+  return self:move_to_pos(row, col, self.start_cell.row, self.start_cell.col, dir)
 end
 
-function Maze:move_to_end(x, y, dir)
-  return self:move_to_pos(x, y, self.end_cell.x, self.end_cell.y, dir)
+function Maze:move_to_end(row, col, dir)
+  return self:move_to_pos(row, col, self.end_cell.row, self.end_cell.col, dir)
 end
 
 function Maze:new(params)

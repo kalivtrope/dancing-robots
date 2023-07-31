@@ -17,27 +17,27 @@
 
 ### Internal coordinate representation
 - when seeing certain errors, you will encounter the coordinates in this format unless stated otherwise (e.g. the game reports an error specifying a graph edge)
-- the game uses the `(x,y)` coordinate system with its origin being at the top-left corner of the grid
+- the game uses the `(y,x)` (also referred to as `(row,col)`) coordinate system with its origin being at the top-left corner of the grid
   - the x-coordinate increases by going right (east), the y-coordinate increases by going down (south)
   - beware, the origin is actually at `(1,1)` (that's because lua arrays are designed as 1-indexed 😎)
 Example (padded with extra spaces for clarity)
 ```
-y/x 1  2  3 4 5 6   7   8
- 1  #  #  # # # #   #   #
- 2  #  .  . # . .   E   #
- 3  #  .  . I . .   #   #
- 4  #  #  . . . .   .   #
- 5  #  .  . I # I (5,7) #
- 6  #  .  . . . #   .   #
- 7  #  IS # I . I   #   #
- 8  #  #  # # # #   #   #
+row/col 1  2  3 4 5 6   7   8
+   1    #  #  # # # #   #   #
+   2    #  .  . # . .   E   #
+   3    #  .  . I . .   #   #
+   4    #  #  . . . .   .   #
+   5    #  .  . I # I (5,7) #
+   6    #  .  . . . #   .   #
+   7    #  IS # I . I   #   #
+   8    #  #  # # # #   #   #
 ```
 ### Orientation
 - there are 4 directions, one of which the robot will be facing: `North, East, South, West`
-- moving `North` decreases the `y` coordinate of the robot
-- moving `East` increases the `x` coordinate of the robot
-- moving `South` increases the `y` coordinate of the robot
-- moving `West` decreases the `x` coordinate of the robot
+- moving `North` decreases the `y` (`row`) coordinate of the robot
+- moving `East` increases the `x` (`col`) coordinate of the robot
+- moving `South` increases the `y` (`row`) coordinate of the robot
+- moving `West` decreases the `x` (`col`) coordinate of the robot
 - Karel's default orientation is to `North`
 ### Robot commands
 - in the following examples, Karel is marked as one of `nesw` denoting his orientation in the grid

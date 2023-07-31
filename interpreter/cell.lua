@@ -4,8 +4,8 @@ local assert_bounds = utils.assert_bounds
 local ObjectType,ObjectCharInv = enums.ObjectType, enums.ObjectCharInv
 
 local Cell = {
-  x = -1,
-  y = -1,
+  row = -1,
+  col = -1,
   object_counts = nil,
   neighbour_walls = nil,
 }
@@ -42,28 +42,28 @@ function Cell:new(o)
   setmetatable(o, self)
   o.object_counts = o.object_counts or {}
   o.neighbour_walls = o.neighbour_walls or {}
-  assert_bounds(o.x, "cell.x", 1)
-  assert_bounds(o.y, "cell.y", 1)
+  assert_bounds(o.row, "cell.row", 1)
+  assert_bounds(o.col, "cell.col", 1)
   return o
 end
 
 function Cell:add_item()
-    assert(not self:is_wall(), string.format("cannot place item at wall (%d,%d)", self.x, self.y))
+    assert(not self:is_wall(), string.format("cannot place item at wall (%d,%d)", self.row, self.col))
     self.object_counts[ObjectType.ITEM] = (self.object_counts[ObjectType.ITEM] or 0) + 1
 end
 
 function Cell:add_start()
-    assert(not self:is_wall(), string.format("cannot place start/end at wall at pos (%d,%d)", self.x, self.y))
+    assert(not self:is_wall(), string.format("cannot place start/end at wall at pos (%d,%d)", self.row, self.col))
     self.object_counts[ObjectType.START] = 1
 end
 
 function Cell:add_end()
-    assert(not self:is_wall(), string.format("cannot place end at wall at pos (%d,%d)", self.x, self.y))
+    assert(not self:is_wall(), string.format("cannot place end at wall at pos (%d,%d)", self.row, self.col))
     self.object_counts[ObjectType.END] = 1
 end
 
 function Cell:add_wall()
-    assert(not self:is_non_wall(), string.format("cannot place wall at pos (%d,%d)", self.x, self.y))
+    assert(not self:is_non_wall(), string.format("cannot place wall at pos (%d,%d)", self.row, self.col))
     self.object_counts[ObjectType.WALL] = 1
 end
 

@@ -24,14 +24,14 @@ function MatrixGenerator.generate(params)
   repeat
     a, b = math.random(n), math.random(n)
   until a ~= b and not (graph[a] or {})[b]
-  for x=1,n do
-    for y=1,n do
-      if graph[y][x] then
-        gen.grid[x+1][y+1]:add_item()
+  for row=1,n do
+    for col=1,n do
+      if graph[row][col] then
+        gen.grid[row+1][col+1]:add_item()
       end
-      if x == b and y == a then
-        gen.grid[x+1][y+1]:add_start()
-        gen.grid[x+1][y+1]:add_end()
+      if col == b and row == a then
+        gen.grid[row+1][col+1]:add_start()
+        gen.grid[row+1][col+1]:add_end()
       end
     end
   end

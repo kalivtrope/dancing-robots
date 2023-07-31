@@ -2,8 +2,8 @@ local enums = require("interpreter.enums")
 local Direction = enums.Direction
 
 local RobotState = {
-  x = -1,
-  y = -1,
+  row = -1,
+  col = -1,
   orientation = Direction.NORTH,
   items_collected = 0,
 }

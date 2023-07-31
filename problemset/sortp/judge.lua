@@ -4,10 +4,10 @@ local SortpJudge = Judge:new()
 
 function SortpJudge:test_if_sorted()
   local error_encountered = false
-  for x=2,self.maze.width-1,2 do
-    for y=self.maze.height-1,self.maze.height+1-x,-2 do
-      if not self.maze[x][y]:is_item() then
-        self:add_verdict(string.format("missing item at pos (%d,%d)", x, y))
+  for col=2,self.maze.width-1,2 do
+    for row=self.maze.height-1,self.maze.height+1-col,-2 do
+      if not self.maze[row][col]:is_item() then
+        self:add_verdict(string.format("missing item at pos (%d,%d)", row, col))
         error_encountered = true
       end
     end

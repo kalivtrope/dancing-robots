@@ -32,12 +32,12 @@ function Judge:test_if_robot_survived()
 end
 
 function Judge:test_if_robot_is_at_end()
-  local robot_x, robot_y = self.robot_state.x, self.robot_state.y
-  local end_x, end_y = self.maze.end_cell.x, self.maze.end_cell.y
-  local ans = robot_x == end_x and robot_y == end_y
+  local robot_row, robot_col = self.robot_state.row, self.robot_state.col
+  local end_row, end_col = self.maze.end_cell.row, self.maze.end_cell.col
+  local ans = robot_row == end_row and robot_col == end_col
   if not ans then
     self:add_verdict(string.format("robot ended at pos (%d,%d), should have been (%d,%d)",
-                                    robot_x, robot_y, end_x, end_y))
+                                    robot_row, robot_col, end_row, end_col))
   end
   return ans
 end
