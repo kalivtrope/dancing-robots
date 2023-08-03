@@ -1,5 +1,28 @@
 # Dancing robots (AKA generická KSP úložka na bludiště++)
 ## Current usage
+### How to set this* up for Outfox
+- make sure your shell is in the root of the working tree in this repository
+```sh
+mkdir -p ~/.project-outfox/Themes/
+ln -sr eralk ~/.project-outfox/Themes/eralk
+```
+- * TODO explain what `this` refers to
+### So how would users play this?
+- TODO: `make userEnv` should prepare a folder `ERALK` with everything that's needed
+- we give them a copy of `main.lua` along with (execute-only binaries of) the interpreter and judges to help debug on
+- they also receive the `problemset` folder containing problem statements, sample inputs, sample outputs and sample command lists
+- they can either just play around with (possibly big) static inputs or they can create a solver for arbitrary inputs (which is worth double the already gained points for static data inputs!)
+  - the solver will be tested against randomly generated inputs with validity of 5 minutes (the Odevzdavatko way)
+  - the implementation of this is TBD
+- static inputs are stored in `Inputs` and in case of corruption can be regenerated anytime from the binary `input_generator` (TODO: this program "just" calls the appropriate generators and seeds them with the same values every time)
+  - the theme uses this binary to get appropriate inputs so users wouldn't have a chance to alter them
+- each problem input follows a convention `p-m.in`
+  - `p` is a problem type (e.g. `sortp`, `matrix`)
+  - `m` is an integer denoting input number
+- users are expected to provide `p-m.out` for static data inputs
+  - they store it in the `Outputs` folder, which is symlinked to a theme directory so they can dance right away
+- the solver program is expected to read from STDIN and write all resultant commands to STDOUT
+
 ### The `main.lua` file
 `lua ./main.lua <path to maze configuration> <path to robot commands>`
 - maze configuration files are usually named `*.in`
