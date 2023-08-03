@@ -221,17 +221,17 @@ end
 local function reachable_from_pos(src_row, src_col, dst_row, dst_col, dir)
   local diff_row, diff_col = normalize_delta(dst_row - src_row, dst_col - src_col)
   local dir_row, dir_col = Direction.dir_delta(dir)
-  return dir_row == diff_row and dir_col == diff_col
+  return (src_row == dst_row and src_col == dst_col) or (dir_row == diff_row and dir_col == diff_col)
 end
 
 
 
 local function is_closer(src_row, src_col, a_row, a_col, b_row, b_col, dir)
   -- returns true if (a_row,a_col) is closer or at the same distance from (src_row,src_col) than (b_row,b_col)
-  assert(reachable_from_pos(src_row, src_col, a_row, a_col, dir))
-  assert(reachable_from_pos(src_row, src_col, b_row, b_col, dir))
-  local d_arow, d_acol = normalize_delta(a_row-src_row,a_col-src_col)
-  local d_brow, d_bcol = normalize_delta(b_row-src_row,b_col-src_col)
+  assert(reachable_from_pos(src_row, src_col, a_row, a_col, dir), string.format("%s %s is not reachable from %s %s in direction %s", a_row, a_col, src_row, src_col, dir))
+  assert(reachable_from_pos(src_row, src_col, b_row, b_col, dir), string.format("%s %s is not reachable from %s %s in direction %s", b_row, b_col, src_row, src_col, dir))
+  local d_arow, d_acol = a_row-src_row,a_col-src_col
+  local d_brow, d_bcol = b_row-src_row,b_col-src_col
   return math.abs(d_arow) <= math.abs(d_brow) and math.abs(d_acol) <= math.abs(d_bcol)
 end
 
@@ -239,10 +239,12 @@ function Maze:move_to_item(row, col, dir)
   local wall_row, wall_col = one_block_before(self[row][col].neighbour_walls[dir].row,
                                               self[row][col].neighbour_walls[dir].col, dir)
   local item_row, item_col = next_item_in_dir(self, row, col, dir)
-  if item_row < 1 or item_row > self.height or item_col < 1 or item_col > self.width then
+  --print('wall', wall_row, wall_col, 'item', item_row, item_col)
+  if wall_row < 1 or wall_row > self.height or wall_col < 1 or wall_col > self.width then
     error("maze is missing borders", 2)
   end
   if is_closer(row,col,item_row,item_col,wall_row,wall_col,dir) then
+    --print("item is closer :)")
     return item_row,item_col,true
   else
     return wall_row,wall_col,false
