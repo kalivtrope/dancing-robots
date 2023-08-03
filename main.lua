@@ -2,7 +2,7 @@ local Interpreter = require("interpreter.interpreter")
 
 local game_configuration, player_input  = arg[1], arg[2]
 local int = Interpreter:new(player_input, game_configuration)
-local judge = require("problemset."..int.game.type..".judge"):attach_to_interpreter(int)
+local judge = require("judges."..int.game.type.."-judge"):attach_to_interpreter(int)
 
 
 while true do
@@ -13,5 +13,5 @@ while true do
   end
   io.write(judge.interpreter.instruction_no .. " " .. judge.interpreter:last_command_executed().."\n")
   io.write(tostring(judge.interpreter.game))
-  os.execute("sleep 0.1")
+  os.execute("sleep 0.05")
 end
