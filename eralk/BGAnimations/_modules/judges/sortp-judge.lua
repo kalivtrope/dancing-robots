@@ -1,4 +1,4 @@
-local Judge = require("problemset.judge")
+local Judge = require("judges.common")
 
 local SortpJudge = Judge:new()
 

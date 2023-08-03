@@ -1,4 +1,4 @@
-local Judge = require("problemset.judge")
+local Judge = require("judges.common")
 local Graph = require("data_structures.graph")
 
 local MatrixJudge = Judge:new()
