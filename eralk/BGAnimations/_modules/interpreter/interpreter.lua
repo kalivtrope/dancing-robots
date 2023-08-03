@@ -4,6 +4,7 @@ local enums = require("interpreter.enums")
 local Tokens = enums.Tokens
 local Game = require("interpreter.game")
 
+
 local Interpreter = {
   instruction_no = 0,
   error_encountered = false,
@@ -56,16 +57,16 @@ end
 function Interpreter:execute_next_command()
   if self.out_of_instructions or self.error_encountered then return false end
   self.instruction_no = self.instruction_no + 1
-  local cmd = Tokens[self.tokens[self.instruction_no]]
-  if not cmd then
+  local _cmd = Tokens[self.tokens[self.instruction_no]]
+  if not _cmd then
     self.out_of_instructions = true
     return OUT_OF_INSTRUCTIONS
   end
-  self.game[string.lower(cmd)](self.game, self.instruction_no)
+  self.game[string.lower(_cmd)](self.game, self.instruction_no)
   if self.game.error_encountered then
     self.error_encountered = true
   end
-  return cmd
+  return _cmd
 end
 
 function Interpreter:execute_n_commands(n)
