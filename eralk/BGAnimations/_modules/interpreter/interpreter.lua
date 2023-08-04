@@ -38,10 +38,10 @@ local function tokenize_one_line(self, line_no, line)
 end
 
 
-local function tokenize_file(self, file_handle)
+local function tokenize_file(self, file_contents)
   local tokens = {}
   local line_no = 1
-  for line in file_handle:lines() do
+  for line in (file_contents .. '\n'):gmatch('(.-)\r?\n') do
     for _,new_token in ipairs(tokenize_one_line(self,line_no,line)) do
       tokens[#tokens + 1] = new_token
     end
@@ -81,15 +81,15 @@ function Interpreter:execute_n_commands(n)
   return cmd_list
 end
 
-function Interpreter:new(player_input_file_path, maze_configuration_file_path)
+function Interpreter:new(maze_configuration_str, player_input_str)
   local o = {}
   setmetatable(o, self)
-  o.tokens = tokenize_file(o, assert(io.open(player_input_file_path, "r")))
+  o.tokens = tokenize_file(o, player_input_str)
   if o.error_encountered then
     write_stderr("errors were encountered, refusing to continue.\n")
     return nil
   end
-  o.game = Game:new((assert(io.open(maze_configuration_file_path, "r"))))
+  o.game = Game:new(maze_configuration_str)
   return o
 end
 
