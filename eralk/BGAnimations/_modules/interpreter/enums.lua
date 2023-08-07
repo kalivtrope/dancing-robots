@@ -28,27 +28,44 @@ for k,v in pairs(ObjectChar) do
   ObjectCharInv[v] = k
 end
 
+local Direction
+
+Direction = {
+  NORTH = 1,
+  EAST = 2,
+  SOUTH = 3,
+  WEST = 4,
+  _NUM_DIRS = function() return 4 end,
+  opposite_direction = function(dir)
+    return (dir + 1) % 4 + 1
+  end,
+  dir_delta = function(dir)
+    local row, col = -1,0 -- north delta
+    for _=2,dir do
+      row,col = col,-row
+    end
+    return row,col
+  end,
+  step = function(row, col, dir)
+    local d_row, d_col = Direction.dir_delta(dir)
+    return row + d_row, col + d_col
+  end,
+}
+
+local DirectionInv = {}
+
+for k,v in pairs(Direction) do
+  DirectionInv[v] = k
+end
+for k,v in pairs(DirectionInv) do
+  Direction[k] = v
+end
+
 return {
   ObjectType = ObjectType,
   ObjectChar = ObjectChar,
   ObjectCharInv = ObjectCharInv,
-  Direction = {
-    NORTH = 1,
-    EAST = 2,
-    SOUTH = 3,
-    WEST = 4,
-    _NUM_DIRS = 4,
-    opposite_direction = function(dir)
-      return (dir + 1) % 4 + 1
-    end,
-    dir_delta = function(dir)
-      local row, col = -1,0 -- north delta
-      for _=2,dir do
-        row,col = col,-row
-      end
-      return row,col
-    end
-  },
+  Direction = Direction,
   GameType = {
     MATRIX = 'matrix',
     MAZE = 'maze',

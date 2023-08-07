@@ -10,11 +10,11 @@ local RobotState = {
 RobotState.__index = RobotState
 
 function RobotState:turn_left()
-  self.orientation = (self.orientation - 2) % Direction._NUM_DIRS + 1
+  self.orientation = (self.orientation - 2) % Direction._NUM_DIRS() + 1
 end
 
 function RobotState:turn_right()
-  self.orientation = self.orientation % Direction._NUM_DIRS + 1
+  self.orientation = self.orientation % Direction._NUM_DIRS() + 1
 end
 
 function RobotState:collect()

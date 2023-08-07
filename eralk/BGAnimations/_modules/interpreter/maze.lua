@@ -186,11 +186,6 @@ local function maze_from_str(maze_str, height, width)
   return maze
 end
 
-local function move(row, col, dir)
-  local d_row, d_col = Direction.dir_delta(dir)
-  return row + d_row, col + d_col
-end
-
 function Maze:collect(row, col)
   local was_last_item = self[row][col]:count_items() == 1
   if was_last_item then
@@ -210,7 +205,7 @@ function Maze:drop(row, col)
 end
 
 local function one_block_before(row, col, dir)
-  return move(row, col, Direction.opposite_direction(dir))
+  return Direction.step(row, col, Direction.opposite_direction(dir))
 end
 
 local function normalize_delta(d_row,d_col)
