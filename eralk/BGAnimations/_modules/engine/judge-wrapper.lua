@@ -76,10 +76,18 @@ local function draw(judge)
   local out = {}
   local maze = judge.maze
   local robot_state = judge.robot_state
-  local min_row = 1
+  -- we make sure to always return a (max_cells_per_column)x(max_cells_per_row) matrix,
+  -- unless the original grid itself is smaller than that.
+  local min_row = ((robot_state.row-1) // max_cells_per_column) * max_cells_per_column + 1
   local max_row = math.min(maze.height, min_row - 1 + max_cells_per_column)
-  local min_col = 1
+  if max_row - min_row + 1 < max_cells_per_column and maze.height >= max_cells_per_column then
+    min_row = max_row - max_cells_per_column + 1
+  end
+  local min_col = ((robot_state.col-1) // max_cells_per_row) * max_cells_per_row + 1
   local max_col = math.min(maze.width, min_col - 1 + max_cells_per_row)
+  if max_col - min_col + 1 < max_cells_per_row and maze.width >=  max_cells_per_row then
+    min_col = max_col - max_cells_per_row + 1
+  end
   for row=1,max_row-min_row+1 do
     out[row] = out[row] or {}
     for col=1,max_col-min_col+1 do
