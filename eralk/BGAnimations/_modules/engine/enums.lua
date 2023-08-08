@@ -114,7 +114,7 @@ local RobotDirectionToDrawable = {
   [Direction.NORTH] = Drawable.robot_north,
   [Direction.EAST] = Drawable.robot_east,
   [Direction.SOUTH] = Drawable.robot_south,
-  [Direction.WEST] = Direction.robot_west,
+  [Direction.WEST] = Drawable.robot_west,
 }
 
 
