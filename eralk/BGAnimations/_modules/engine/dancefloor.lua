@@ -37,8 +37,8 @@ local function draw_sprite_at_pos(sprite, x, y, cells_per_row, cells_per_column)
   --   we shift the origin back by cells_per_row/2 and cells_per_column/2 sprites
   --   in order for the sprites in middle column/row to be placed exactly at the screen center x/y
   --   Subnote: it should always hold that 0 < cells_per_row <= max_cells_per_row
-  sprite:xy(real_size/2 + (x-1)*real_size - cells_per_row*real_size/2 + scx,
-            real_size/2 + (y-1)*real_size - cells_per_column*real_size/2 + scy)
+  sprite:xy(real_size/2 + (x-1)*real_size - cells_per_row*real_size/2, -- TODO
+            real_size/2 + (y-1)*real_size - cells_per_column*real_size/2) -- TODO
   -- In the end, we need to scale the sprite's texture to have real_size on screen, which is done by the value
   --   of basezoom=real_size/texture_size (that is determined in the runtime below)
   sprite:basezoomx(basezoom)
@@ -48,18 +48,20 @@ local function draw_sprite_at_pos(sprite, x, y, cells_per_row, cells_per_column)
 end
 
 local cell_data = nil
+local cells_per_column = nil
+local cells_per_row = nil
 
 local function draw_function(self)
   if not cell_data then return end
   local curr_data = cell_data
-  local cells_per_column = #cell_data
-  local cells_per_row = #cell_data[1]
+  --local cells_per_column = #cell_data
+  --local cells_per_row = #cell_data[1]
   assert(cells_per_column > 0 and cells_per_column <= max_cells_per_column,
     string.format("invalid number of cells per column (got '%d')", cells_per_column))
   assert(cells_per_row > 0 and cells_per_row <= max_cells_per_row,
     string.format("invalid number of cells per column (got '%d')", cells_per_row))
-  for y,row in ipairs(curr_data) do
-    for x,cell_type_arr in ipairs(row) do
+  for y,row in pairs(curr_data) do
+    for x,cell_type_arr in pairs(row) do
       for _,cell_type in ipairs(cell_type_arr) do
         draw_sprite_at_pos(self:GetChild(cell_type), x, y, cells_per_row, cells_per_column)
       end
@@ -67,26 +69,20 @@ local function draw_function(self)
   end
 end
 
-
-local Dancefloor = Def.ActorFrameTexture{ -- TODO: check if this poor guy doesn't get mercilessly murdered??
+local Dancefloor = Def.ActorFrame{
   CellUpdateMessageCommand = function(self,params)
     cell_data = params.cell_data
-    self:visible(true)
-    self:Draw()
-    self:visible(false)
+    cells_per_column = params.cells_per_column
+    cells_per_row = params.cells_per_row
   end,
   InitCommand=function(self)
-    self:SetWidth(sw):SetHeight(sh):SetTextureName("dancefloorAFT")
     self:xy(scx, scy)
     local start = self:GetChild(Drawable.start)
-    --local End = self:GetChild(Drawable["end"])
     -- obliviously assuming all textures are squares of the same size (they *better* be! >:( )
     local texture_size = start:GetTexture():GetTextureWidth()
     basezoom = real_size / texture_size
     -- cell_data = { {"start", "end"}, {"end", "start" }}
     self:SetDrawFunction(draw_function)
-    self:Create()
-    self:visible(false)
   end,
 }
 
@@ -94,6 +90,9 @@ for k in pairs(Drawable) do
   Dancefloor[#Dancefloor+1] = CreateSprite(k)
 end
 
+return Dancefloor
+
+--[[
 return Def.ActorFrame{
   Dancefloor,
   Def.Sprite{
@@ -101,3 +100,4 @@ return Def.ActorFrame{
     InitCommand=function(self) self:Center() end,
   },
 }
+--]]
