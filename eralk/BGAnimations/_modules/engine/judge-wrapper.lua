@@ -13,7 +13,7 @@ local function cell_data_to_drawable_array(data)
     return {Drawable.wall}
   end
   local out = {}
-  out[1] = data.is_robot and Drawable.empty_robot or (data.is_even and Drawable.empty_even or Drawable.empty_odd)
+  out[1] = --[[data.is_robot and Drawable.empty_robot or--]](data.is_even and Drawable.empty_even or Drawable.empty_odd)
   if data.is_start then
     out[#out+1] = Drawable.start
   end
@@ -72,58 +72,69 @@ local function in_bounds(val, min, max)
   return val >= min and val <= max
 end
 
+local function out_of_frame(curr_pos, min, max)
+  return curr_pos < min+(max-min)/3 or curr_pos > min+(max-min)*2/3
+end
+
+local function center_robot_pos(curr_pos, dimen_size, maze_size)
+  if maze_size <= dimen_size then return 1, maze_size end
+  return curr_pos - dimen_size // 2, curr_pos + dimen_size // 2 - (dimen_size % 2 == 0 and 1 or 0)
+end
+
+local min_row, min_col, max_row, max_col
 local function draw(judge)
   local out = {}
   local maze = judge.maze
   local robot_state = judge.robot_state
-  -- we make sure to always return a (max_cells_per_column)x(max_cells_per_row) matrix,
-  -- unless the original grid itself is smaller than that.
-  local min_row = ((robot_state.row-1) // max_cells_per_column) * max_cells_per_column + 1
-  local max_row = math.min(maze.height, min_row - 1 + max_cells_per_column)
-  if max_row - min_row + 1 < max_cells_per_column and maze.height >= max_cells_per_column then
-    min_row = max_row - max_cells_per_column + 1
+  if not min_row or out_of_frame(robot_state.row, min_row, max_row) then
+    min_row, max_row = center_robot_pos(robot_state.row, max_cells_per_column, maze.height)
   end
-  local min_col = ((robot_state.col-1) // max_cells_per_row) * max_cells_per_row + 1
-  local max_col = math.min(maze.width, min_col - 1 + max_cells_per_row)
-  if max_col - min_col + 1 < max_cells_per_row and maze.width >=  max_cells_per_row then
-    min_col = max_col - max_cells_per_row + 1
+  if not min_col or out_of_frame(robot_state.col, min_col, max_col) then
+    min_col, max_col = center_robot_pos(robot_state.col, max_cells_per_row, maze.width)
   end
   for row=1,max_row-min_row+1 do
     out[row] = out[row] or {}
-    for col=1,max_col-min_col+1 do
-      local real_row = row+min_row-1
-      local real_col = col+min_col-1
-      local cell = maze[real_row][real_col]
-      local is_wall = cell:is_wall()
-      local is_start = cell:is_start()
-      local is_end = cell:is_end()
-      local is_item = cell:is_item()
-      local no_items = cell:count_items()
-      local is_robot = robot_state.row == real_row and robot_state.col == real_col
-      local is_even = (real_row+real_col) % 2 == 0
-      local robot_dir = robot_state.orientation
-      out[row][col] = cell_data_to_drawable_array({is_wall = is_wall,
-                                                   is_start = is_start,
-                                                   is_end = is_end,
-                                                   is_item = is_item,
-                                                   no_items = no_items,
-                                                   is_robot = is_robot,
-                                                   is_even = is_even,
-                                                   robot_dir = robot_dir})
-      if not is_wall then
-        for nb_cell,dir in cells_in_all_dirs(maze, real_row, real_col) do
-          if nb_cell:is_wall() then
-            if should_be_shadowed(maze, real_row, real_col, dir)
-              and in_bounds(nb_cell.row, min_row, max_row)
-              and in_bounds(nb_cell.col, min_col, max_col) then
-                add_shadow_to_cell(out, row, col, dir)
+    local real_row = row+min_row-1
+    if maze[real_row] then
+      for col=1,max_col-min_col+1 do
+        local real_col = col+min_col-1
+        if maze[real_row][real_col] then
+          local cell = maze[real_row][real_col]
+          local is_wall = cell:is_wall()
+          local is_start = cell:is_start()
+          local is_end = cell:is_end()
+          local is_item = cell:is_item()
+          local no_items = cell:count_items()
+          local is_robot = robot_state.row == real_row and robot_state.col == real_col
+          local is_even = (real_row+real_col) % 2 == 0
+          local robot_dir = robot_state.orientation
+          out[row][col] = cell_data_to_drawable_array({is_wall = is_wall,
+          is_start = is_start,
+          is_end = is_end,
+          is_item = is_item,
+          no_items = no_items,
+          is_robot = is_robot,
+          is_even = is_even,
+          robot_dir = robot_dir})
+          if not is_wall then
+            for nb_cell,dir in cells_in_all_dirs(maze, real_row, real_col) do
+              if nb_cell:is_wall() then
+                if should_be_shadowed(maze, real_row, real_col, dir)
+                  and in_bounds(nb_cell.row, min_row, max_row)
+                  and in_bounds(nb_cell.col, min_col, max_col) then
+                  add_shadow_to_cell(out, row, col, dir)
+                end
+              end
             end
           end
         end
       end
     end
   end
-  MESSAGEMAN:Broadcast("CellUpdate", { cell_data = out })
+  --print("row", min_row, robot_state.row, max_row)
+  --print("col", min_col, robot_state.col, max_col)
+  MESSAGEMAN:Broadcast("CellUpdate", { cell_data = out, cells_per_row=math.min(max_cells_per_row, maze.width),
+                                       cells_per_column=math.min(max_cells_per_column, maze.height) })
 end
 
 return function(judge)
@@ -132,6 +143,13 @@ return function(judge)
     OnCommand=function(self)
       self:visible(false)
       draw(judge)
+      self:sleep(0.5):queuecommand("Tick")
+    end,
+    TickCommand=function(self)
+      if judge.judgment_received then return end
+      judge:judge_next_command()
+      draw(judge)
+      self:sleep(1):queuecommand("Tick")
     end,
     ExecuteInQueueCommand=function(self)
       --for i=1,200000000 do
