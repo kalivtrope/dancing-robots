@@ -238,13 +238,13 @@ return function(judge)
     OnCommand=function(self)
       self:visible(false)
       draw()
-      self:sleep(0.25):queuecommand("Tick")
+      self:sleep(animation_duration):queuecommand("Tick")
     end,
     TickCommand=function(self)
       if Judge.judgment_received then return end -- TODO: implement command queueing
         Judge:judge_next_command()
         needs_redraw = true
-        self:sleep(0.25):queuecommand("Tick")
+        self:sleep(animation_duration):queuecommand("Tick")
     end,
 
     ExecuteInQueueCommand=function(self)
