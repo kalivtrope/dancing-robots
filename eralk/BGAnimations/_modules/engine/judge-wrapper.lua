@@ -6,7 +6,19 @@ local ShadowDirectionToDrawable = Enums.ShadowDirectionToDrawable
 
 local Constants = require("engine.constants")
 local Direction = require("engine.enums").Direction
-local max_cells_per_column, max_cells_per_row = Constants.max_cells_per_column, Constants.max_cells_per_row
+local max_cells_per_column = Constants.max_cells_per_column
+local max_cells_per_row = Constants.max_cells_per_row
+local animation_duration = Constants.animation_duration
+local Judge
+
+-- contains the last drawn bounding box
+local old_frame = {}
+-- contains the bounding box we want to transition into
+local new_frame = {}
+
+-- Actor that keeps a timer for maintaining animations
+local timer
+
 
 local function cell_data_to_drawable_array(data)
   if data.is_wall then
@@ -77,38 +89,41 @@ local function out_of_frame(curr_pos, min, max)
 end
 
 local function center_robot_pos(curr_pos, dimen_size, maze_size)
-  if maze_size <= dimen_size then return 1, maze_size end
-  return curr_pos - dimen_size // 2, curr_pos + dimen_size // 2 - (dimen_size % 2 == 0 and 1 or 0)
+  -- returns the minimum and maximum position
+  -- of the frame's bounding box in the specified direction
+  -- (the direction being either horizontal or vertical, but that's not important for this function's logic)
+  -- such that the robot is placed in the center of the frame
+  -- the frame is `dimen_size` cells tall/wide, the maze is `maze_size` cells tall/wide
+  if maze_size <= dimen_size then
+    -- if the maze is too small, make the frame focus on the whole thing
+    return 1, maze_size
+  end
+  return curr_pos - dimen_size // 2,
+         curr_pos + dimen_size // 2 - (dimen_size % 2 == 0 and 1 or 0)
 end
 
-local min_row, min_col, max_row, max_col
-local function draw(judge)
+local function draw_frame(frame)
+  -- draws the maze at the frame defined by the bounding box frame.{min,max}_{row,col}
   local out = {}
-  local maze = judge.maze
-  local robot_state = judge.robot_state
-  if not min_row or out_of_frame(robot_state.row, min_row, max_row) then
-    min_row, max_row = center_robot_pos(robot_state.row, max_cells_per_column, maze.height)
-  end
-  if not min_col or out_of_frame(robot_state.col, min_col, max_col) then
-    min_col, max_col = center_robot_pos(robot_state.col, max_cells_per_row, maze.width)
-  end
-  for row=1,max_row-min_row+1 do
-    out[row] = out[row] or {}
-    local real_row = row+min_row-1
-    if maze[real_row] then
-      for col=1,max_col-min_col+1 do
-        local real_col = col+min_col-1
-        if maze[real_row][real_col] then
-          local cell = maze[real_row][real_col]
+  local maze = Judge.maze
+  local robot_state = Judge.robot_state
+  for row=math.floor(frame.min_row),math.ceil(frame.max_row) do
+    if maze[row] then
+      local row_pos = row - frame.min_row + 1
+      out[row_pos] = out[row_pos] or {}
+      for col=math.floor(frame.min_col),math.ceil(frame.max_col) do
+        local col_pos = col - frame.min_col + 1
+        if maze[row][col] then
+          local cell = maze[row][col]
           local is_wall = cell:is_wall()
           local is_start = cell:is_start()
           local is_end = cell:is_end()
           local is_item = cell:is_item()
           local no_items = cell:count_items()
-          local is_robot = robot_state.row == real_row and robot_state.col == real_col
-          local is_even = (real_row+real_col) % 2 == 0
+          local is_robot = robot_state.row == row and robot_state.col == col
+          local is_even = (row+col) % 2 == 0
           local robot_dir = robot_state.orientation
-          out[row][col] = cell_data_to_drawable_array({is_wall = is_wall,
+          out[row_pos][col_pos] = cell_data_to_drawable_array({is_wall = is_wall,
           is_start = is_start,
           is_end = is_end,
           is_item = is_item,
@@ -117,12 +132,12 @@ local function draw(judge)
           is_even = is_even,
           robot_dir = robot_dir})
           if not is_wall then
-            for nb_cell,dir in cells_in_all_dirs(maze, real_row, real_col) do
+            for nb_cell,dir in cells_in_all_dirs(maze, row, col) do
               if nb_cell:is_wall() then
-                if should_be_shadowed(maze, real_row, real_col, dir)
-                  and in_bounds(nb_cell.row, min_row, max_row)
-                  and in_bounds(nb_cell.col, min_col, max_col) then
-                  add_shadow_to_cell(out, row, col, dir)
+                if should_be_shadowed(maze, row, col, dir)
+                  and in_bounds(nb_cell.row, frame.min_row, frame.max_row)
+                  and in_bounds(nb_cell.col, frame.min_col, frame.max_col) then
+                  add_shadow_to_cell(out, row_pos, col_pos, dir)
                 end
               end
             end
@@ -131,26 +146,101 @@ local function draw(judge)
       end
     end
   end
-  --print("row", min_row, robot_state.row, max_row)
-  --print("col", min_col, robot_state.col, max_col)
+  return out
+end
+
+
+local function draw()
+  local maze = Judge.maze
+  local robot_state = Judge.robot_state
+  local animate = false
+  if not old_frame.min_row or out_of_frame(robot_state.row, old_frame.min_row, old_frame.max_row) then
+    if old_frame.min_row then animate = true end
+    new_frame.min_row, new_frame.max_row = center_robot_pos(robot_state.row, max_cells_per_column, maze.height)
+  end
+  if not old_frame.min_col or out_of_frame(robot_state.col, old_frame.min_col, old_frame.max_col) then
+    if old_frame.min_col then animate = true end
+    new_frame.min_col, new_frame.max_col = center_robot_pos(robot_state.col, max_cells_per_row, maze.width)
+  end
+  if animate then
+    timer:queuecommand("BeginAnimate")
+    --[[
+    print("dold_frame", old_frame.min_row, old_frame.max_row, old_frame.min_col, old_frame.max_col)
+    print("dnew_frame", new_frame.min_row, new_frame.max_row, new_frame.min_col, new_frame.max_col)
+    --]]
+    return
+  end
+  for k,v in pairs(new_frame) do old_frame[k] = v end
+  local out = draw_frame(old_frame)
   MESSAGEMAN:Broadcast("CellUpdate", { cell_data = out, cells_per_row=math.min(max_cells_per_row, maze.width),
                                        cells_per_column=math.min(max_cells_per_column, maze.height) })
 end
 
+local function transition(percentage)
+  -- transition from old_frame to new_frame using simple linear interpolation
+  local frame = {}
+  --[[
+  print(percentage)
+  print("old_frame", old_frame.min_row, old_frame.max_row, old_frame.min_col, old_frame.max_col)
+  print("new_frame", new_frame.min_row, new_frame.max_row, new_frame.min_col, new_frame.max_col)
+  --]]
+  for k,v in pairs(old_frame) do
+    frame[k] = lerp(percentage, v, new_frame[k])
+  end
+  local out = draw_frame(frame)
+  local maze = Judge.maze
+  MESSAGEMAN:Broadcast("CellUpdate", { cell_data = out, cells_per_row=math.min(max_cells_per_row, maze.width),
+                                       cells_per_column=math.min(max_cells_per_column, maze.height) })
+end
+
+local animation_in_progress = false
+
+local function draw_function(_)
+  if animation_in_progress then
+    local aux = timer:getaux()
+    transition(aux)
+    if aux == 1 then
+      animation_in_progress = false
+      for k,v in pairs(new_frame) do old_frame[k] = v end
+    end
+  else
+    draw()
+  end
+end
+
 return function(judge)
-  return Def.Actor{
-    Name="Judge",
+  return Def.ActorFrame{
+  InitCommand=function(self)
+    self:visible(true)
+    self:SetDrawFunction(draw_function)
+  end,
+  Def.Quad{
+    Name="Timer",
+    InitCommand=function(self)
+      self:visible(false)
+      timer = self
+      self:aux(0)
+    end,
+    BeginAnimateCommand=function(self)
+      self:aux(0)
+      animation_in_progress = true
+      self:linear(animation_duration):aux(1)
+    end,
+  },
+  Def.Actor{
+    Name="JudgeWrapper",
+    InitCommand=function(self) Judge = judge end,
     OnCommand=function(self)
       self:visible(false)
-      draw(judge)
-      self:sleep(0.5):queuecommand("Tick")
+      draw()
+      self:sleep(0.25):queuecommand("Tick")
     end,
     TickCommand=function(self)
-      if judge.judgment_received then return end
-      judge:judge_next_command()
-      draw(judge)
-      self:sleep(1):queuecommand("Tick")
+      if Judge.judgment_received then return end -- TODO: implement command queueing
+        Judge:judge_next_command()
+        self:sleep(0.25):queuecommand("Tick")
     end,
+
     ExecuteInQueueCommand=function(self)
       --for i=1,200000000 do
 
@@ -173,4 +263,5 @@ return function(judge)
       --Debug.screenMsg("NEXT", certainty, id)
     end,
   }
+}
 end
