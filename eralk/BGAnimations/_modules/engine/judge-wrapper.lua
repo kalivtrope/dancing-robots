@@ -137,8 +137,8 @@ local function draw_frame(frame)
             for nb_cell,dir in cells_in_all_dirs(maze, row, col) do
               if nb_cell:is_wall() then
                 if should_be_shadowed(maze, row, col, dir)
-                  and in_bounds(nb_cell.row, frame.min_row, frame.max_row)
-                  and in_bounds(nb_cell.col, frame.min_col, frame.max_col) then
+                  and in_bounds(nb_cell.row, math.floor(frame.min_row), math.ceil(frame.max_row))
+                  and in_bounds(nb_cell.col, math.floor(frame.min_col), math.ceil(frame.max_col)) then
                   add_shadow_to_cell(out, row_pos, col_pos, dir)
                 end
               end
