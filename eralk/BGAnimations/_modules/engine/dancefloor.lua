@@ -37,8 +37,8 @@ local function draw_sprite_at_pos(sprite, x, y, cells_per_row, cells_per_column)
   --   we shift the origin back by cells_per_row/2 and cells_per_column/2 sprites
   --   in order for the sprites in middle column/row to be placed exactly at the screen center x/y
   --   Subnote: it should always hold that 0 < cells_per_row <= max_cells_per_row
-  sprite:xy(real_size/2 + (x-1)*real_size - cells_per_row*real_size/2, -- TODO
-            real_size/2 + (y-1)*real_size - cells_per_column*real_size/2) -- TODO
+  sprite:xy(real_size/2 + (x-1)*real_size - cells_per_row*real_size/2 + scx,
+            real_size/2 + (y-1)*real_size - cells_per_column*real_size/2 + scy)
   -- In the end, we need to scale the sprite's texture to have real_size on screen, which is done by the value
   --   of basezoom=real_size/texture_size (that is determined in the runtime below)
   sprite:basezoomx(basezoom)
@@ -69,13 +69,17 @@ local function draw_function(self)
   end
 end
 
-local Dancefloor = Def.ActorFrame{
+local Dancefloor = Def.ActorFrameTexture{
   CellUpdateMessageCommand = function(self,params)
     cell_data = params.cell_data
     cells_per_column = params.cells_per_column
     cells_per_row = params.cells_per_row
+    self:visible(true)
+    self:Draw()
+    self:visible(false)
   end,
   InitCommand=function(self)
+    self:SetWidth(sw):SetHeight(sh):SetTextureName("dancefloorAFT")
     self:xy(scx, scy)
     local start = self:GetChild(Drawable.start)
     -- obliviously assuming all textures are squares of the same size (they *better* be! >:( )
@@ -83,6 +87,8 @@ local Dancefloor = Def.ActorFrame{
     basezoom = real_size / texture_size
     -- cell_data = { {"start", "end"}, {"end", "start" }}
     self:SetDrawFunction(draw_function)
+    self:Create()
+    self:visible(false)
   end,
 }
 
@@ -90,9 +96,9 @@ for k in pairs(Drawable) do
   Dancefloor[#Dancefloor+1] = CreateSprite(k)
 end
 
-return Dancefloor
+--return Dancefloor
 
---[[
+
 return Def.ActorFrame{
   Dancefloor,
   Def.Sprite{
@@ -100,4 +106,3 @@ return Def.ActorFrame{
     InitCommand=function(self) self:Center() end,
   },
 }
---]]

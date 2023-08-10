@@ -19,6 +19,8 @@ local new_frame = {}
 -- Actor that keeps a timer for maintaining animations
 local timer
 
+local needs_redraw = false
+
 
 local function cell_data_to_drawable_array(data)
   if data.is_wall then
@@ -204,7 +206,10 @@ local function draw_function(_)
       for k,v in pairs(new_frame) do old_frame[k] = v end
     end
   else
-    draw()
+    if needs_redraw then
+      draw()
+      needs_redraw = false
+    end
   end
 end
 
@@ -238,6 +243,7 @@ return function(judge)
     TickCommand=function(self)
       if Judge.judgment_received then return end -- TODO: implement command queueing
         Judge:judge_next_command()
+        needs_redraw = true
         self:sleep(0.25):queuecommand("Tick")
     end,
 
