@@ -5,7 +5,10 @@ local sh = SCREEN_HEIGHT
 local Constants = require("engine.constants")
 local max_cells_per_column, real_size, max_cells_per_row =
       Constants.max_cells_per_column, Constants.real_size, Constants.max_cells_per_row
-local basezoom
+local cell_data = nil
+local cell_len = 0
+local cells_per_column = nil
+local cells_per_row = nil
 
 local Enums = require("engine.enums")
 local Drawable = Enums.Drawable
@@ -27,7 +30,7 @@ local function CreateSprite(name, idx)
   }
 end
 
-local function draw_sprite_at_pos(sprite, x, y, cells_per_row, cells_per_column)
+local function draw_sprite_at_pos(sprite, x, y)
   sprite:visible(true)
   -- Here the method sprite:xy() sets the position of a sprite's CENTER relative to the screen coordinates.
   -- Screen coordinates go from (0,0) at the top-left corner to
@@ -48,32 +51,18 @@ local function draw_sprite_at_pos(sprite, x, y, cells_per_row, cells_per_column)
   --   Subnote: it should always hold that 0 < cells_per_row <= max_cells_per_row
   sprite:xy(real_size/2 + (x-1)*real_size - cells_per_row*real_size/2 + scx,
             real_size/2 + (y-1)*real_size - cells_per_column*real_size/2 + scy)
-  -- In the end, we need to scale the sprite's texture to have real_size on screen, which is done by the value
-  --   of basezoom=real_size/texture_size (that is determined in the runtime below)
-  sprite:basezoomx(basezoom)
-  sprite:basezoomy(basezoom)
+  -- In the beginning, we also needed to scale the sprite's texture to have real_size on screen,
+  -- which was done by the value of basezoom=real_size/texture_size (that was determined in the runtime defined above)
   sprite:Draw()
   sprite:visible(false)
 end
 
-local cell_data = nil
-local cells_per_column = nil
-local cells_per_row = nil
-
-local function draw_function(self)
-  if not cell_data then return end
-  local curr_data = cell_data
-  --local cells_per_column = #cell_data
-  --local cells_per_row = #cell_data[1]
-  assert(cells_per_column > 0 and cells_per_column <= max_cells_per_column,
-    string.format("invalid number of cells per column (got '%d')", cells_per_column))
-  assert(cells_per_row > 0 and cells_per_row <= max_cells_per_row,
-    string.format("invalid number of cells per column (got '%d')", cells_per_row))
-  for y,row in pairs(curr_data) do
-    for x,cell_type_arr in pairs(row) do
-      for _,cell_type in ipairs(cell_type_arr) do
-        draw_sprite_at_pos(DrawableToSprite[cell_type], x, y, cells_per_row, cells_per_column)
-      end
+local function draw_function()
+  for i=1,cell_len do
+    local cell = cell_data[i]
+    local row, col = cell.row, cell.col
+    for _,cell_type in ipairs(cell) do
+      draw_sprite_at_pos(DrawableToSprite[cell_type], col, row)
     end
   end
 end
@@ -81,13 +70,24 @@ end
 
 
 local Dancefloor = Def.ActorFrameTexture{
-  CellUpdateMessageCommand = function(self,params)
-    cell_data = params.cell_data
-    cells_per_column = params.cells_per_column
+  Name="Dancefloor",
+  CellsPerDimenMessageCommand=function(_,params)
     cells_per_row = params.cells_per_row
+    cells_per_column = params.cells_per_column
+    assert(type(cells_per_column) == "number" and cells_per_column > 0 and cells_per_column <= max_cells_per_column,
+      string.format("invalid number of cells per column (got '%s')", cells_per_column))
+    assert(type(cells_per_row) == "number" and cells_per_row > 0 and cells_per_row <= max_cells_per_row,
+      string.format("invalid number of cells per column (got '%s')", cells_per_row))
+  end,
+  FlushDrawMessageCommand=function(self)
     self:visible(true)
     self:Draw()
     self:visible(false)
+    cell_len = 0
+  end,
+  CellUpdateMessageCommand = function(_,cell)
+    cell_len = cell_len + 1
+    cell_data[cell_len] = cell
   end,
   InitCommand=function(self)
     self:SetWidth(sw):SetHeight(sh):SetTextureName("dancefloorAFT")
@@ -95,6 +95,8 @@ local Dancefloor = Def.ActorFrameTexture{
     self:SetDrawFunction(draw_function)
     self:Create()
     self:visible(false)
+    cell_data = {}
+    cell_len = 0
   end,
 }
 

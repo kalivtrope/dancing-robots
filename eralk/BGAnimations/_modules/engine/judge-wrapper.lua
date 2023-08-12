@@ -9,6 +9,8 @@ local Direction = require("engine.enums").Direction
 local max_cells_per_column = Constants.max_cells_per_column
 local max_cells_per_row = Constants.max_cells_per_row
 local animation_duration = Constants.animation_duration
+local cells_per_row
+local cells_per_column
 local Judge
 
 -- contains the last drawn bounding box
@@ -19,7 +21,8 @@ local new_frame = {}
 -- Actor that keeps a timer for maintaining animations
 local timer
 
-local needs_redraw = false
+local needs_redraw
+local animation_in_progress
 
 
 local function cell_data_to_drawable_array(data)
@@ -43,10 +46,8 @@ local function cell_data_to_drawable_array(data)
   return out
 end
 
-local function add_shadow_to_cell(out, row, col, dir)
-  out[row] = out[row] or {}
-  out[row][col] = out[row][col] or {}
-  out[row][col][#out[row][col]+1] = ShadowDirectionToDrawable[dir]
+local function add_shadow_to_cell(out, dir)
+  out[#out+1] = ShadowDirectionToDrawable[dir]
 end
 
 local function cells_in_all_dirs(maze, row, col)
@@ -104,15 +105,21 @@ local function center_robot_pos(curr_pos, dimen_size, maze_size)
          curr_pos + dimen_size // 2 - (dimen_size % 2 == 0 and 1 or 0)
 end
 
+local function broadcast_cell(cell)
+  MESSAGEMAN:Broadcast("CellUpdate", cell)
+end
+
+local function flush_draw()
+  MESSAGEMAN:Broadcast("FlushDraw")
+end
+
 local function draw_frame(frame)
   -- draws the maze at the frame defined by the bounding box frame.{min,max}_{row,col}
-  local out = {}
   local maze = Judge.maze
   local robot_state = Judge.robot_state
   for row=math.floor(frame.min_row),math.ceil(frame.max_row) do
     if maze[row] then
       local row_pos = row - frame.min_row + 1
-      out[row_pos] = out[row_pos] or {}
       for col=math.floor(frame.min_col),math.ceil(frame.max_col) do
         local col_pos = col - frame.min_col + 1
         if maze[row][col] then
@@ -125,7 +132,7 @@ local function draw_frame(frame)
           local is_robot = robot_state.row == row and robot_state.col == col
           local is_even = (row+col) % 2 == 0
           local robot_dir = robot_state.orientation
-          out[row_pos][col_pos] = cell_data_to_drawable_array({is_wall = is_wall,
+          local out_cell = cell_data_to_drawable_array({is_wall = is_wall,
           is_start = is_start,
           is_end = is_end,
           is_item = is_item,
@@ -133,22 +140,25 @@ local function draw_frame(frame)
           is_robot = is_robot,
           is_even = is_even,
           robot_dir = robot_dir})
+          out_cell.row = row_pos
+          out_cell.col = col_pos
           if not is_wall then
             for nb_cell,dir in cells_in_all_dirs(maze, row, col) do
               if nb_cell:is_wall() then
                 if should_be_shadowed(maze, row, col, dir)
                   and in_bounds(nb_cell.row, math.floor(frame.min_row), math.ceil(frame.max_row))
                   and in_bounds(nb_cell.col, math.floor(frame.min_col), math.ceil(frame.max_col)) then
-                  add_shadow_to_cell(out, row_pos, col_pos, dir)
+                  add_shadow_to_cell(out_cell, dir)
                 end
               end
             end
           end
+          broadcast_cell(out_cell)
         end
       end
     end
   end
-  return out
+  flush_draw()
 end
 
 
@@ -173,9 +183,7 @@ local function draw()
     return
   end
   for k,v in pairs(new_frame) do old_frame[k] = v end
-  local out = draw_frame(old_frame)
-  MESSAGEMAN:Broadcast("CellUpdate", { cell_data = out, cells_per_row=math.min(max_cells_per_row, maze.width),
-                                       cells_per_column=math.min(max_cells_per_column, maze.height) })
+  draw_frame(old_frame)
 end
 
 local function transition(percentage)
@@ -189,35 +197,50 @@ local function transition(percentage)
   for k,v in pairs(old_frame) do
     frame[k] = lerp(percentage, v, new_frame[k])
   end
-  local out = draw_frame(frame)
-  local maze = Judge.maze
-  MESSAGEMAN:Broadcast("CellUpdate", { cell_data = out, cells_per_row=math.min(max_cells_per_row, maze.width),
-                                       cells_per_column=math.min(max_cells_per_column, maze.height) })
+  draw_frame(frame)
 end
 
-local animation_in_progress = false
 
-local function draw_function(_)
-  if animation_in_progress then
+local function draw_function(self)
+  self:queuecommand("QueueUpdate")
+end
+
+return function(judge)
+  return Def.ActorFrame{
+  InitCommand=function(self)
+    animation_in_progress = false
+    needs_redraw = true
+    self:visible(true)
+    self:SetDrawFunction(draw_function)
+  end,
+  QueueUpdateCommand=function(self)
+    if animation_in_progress then
+      self:queuecommand("Transition")
+    else
+      if needs_redraw then
+        self:queuecommand("QueueDraw")
+      end
+    end
+  end,
+  QueueDrawCommand=function()
+    draw()
+    needs_redraw = false
+  end,
+  TransitionCommand=function()
     local aux = timer:getaux()
     transition(aux)
     if aux == 1 then
       animation_in_progress = false
       for k,v in pairs(new_frame) do old_frame[k] = v end
     end
-  else
-    if needs_redraw then
-      draw()
-      needs_redraw = false
-    end
-  end
-end
-
-return function(judge)
-  return Def.ActorFrame{
-  InitCommand=function(self)
-    self:visible(true)
-    self:SetDrawFunction(draw_function)
+  end,
+  OnCommand=function()
+    cells_per_column=math.min(max_cells_per_column, judge.maze.height)
+    cells_per_row=math.min(max_cells_per_row, judge.maze.width)
+    MESSAGEMAN:Broadcast("CellsPerDimen", {
+      cells_per_column=cells_per_column,
+      cells_per_row=cells_per_row,
+    })
   end,
   Def.Quad{
     Name="Timer",
@@ -237,7 +260,6 @@ return function(judge)
     InitCommand=function(self) Judge = judge end,
     OnCommand=function(self)
       self:visible(false)
-      draw()
       self:sleep(animation_duration):queuecommand("Tick")
     end,
     TickCommand=function(self)
