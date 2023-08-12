@@ -57,8 +57,8 @@ end
 
 local function create_enum(t)
   local res = {}
-  for _,v in pairs(t) do
-    res[v] = v
+  for k,v in ipairs(t) do
+    res[v] = k
   end
   return res
 end

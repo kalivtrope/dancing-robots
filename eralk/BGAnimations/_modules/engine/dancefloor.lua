@@ -9,12 +9,21 @@ local basezoom
 
 local Enums = require("engine.enums")
 local Drawable = Enums.Drawable
+local DrawableToSprite = {}
 
-local function CreateSprite(name)
+local function CreateSprite(name, idx)
   return Def.Sprite {
     Name=name,
     Texture="../../_images/" .. name .. ".png",
-    InitCommand=function(self) self:visible(false) end
+    InitCommand=function(self)
+      self:visible(false)
+      DrawableToSprite[idx] = self
+      local texture_size = self:GetTexture():GetTextureWidth()
+      -- obliviously assuming all textures are squares of the same size (they *better* be! >:( )
+      local basezoom = real_size / texture_size
+      self:basezoomx(basezoom)
+      self:basezoomy(basezoom)
+    end,
   }
 end
 
@@ -63,11 +72,13 @@ local function draw_function(self)
   for y,row in pairs(curr_data) do
     for x,cell_type_arr in pairs(row) do
       for _,cell_type in ipairs(cell_type_arr) do
-        draw_sprite_at_pos(self:GetChild(cell_type), x, y, cells_per_row, cells_per_column)
+        draw_sprite_at_pos(DrawableToSprite[cell_type], x, y, cells_per_row, cells_per_column)
       end
     end
   end
 end
+
+
 
 local Dancefloor = Def.ActorFrameTexture{
   CellUpdateMessageCommand = function(self,params)
@@ -81,23 +92,17 @@ local Dancefloor = Def.ActorFrameTexture{
   InitCommand=function(self)
     self:SetWidth(sw):SetHeight(sh):SetTextureName("dancefloorAFT")
     self:xy(scx, scy)
-    local start = self:GetChild(Drawable.start)
-    -- obliviously assuming all textures are squares of the same size (they *better* be! >:( )
-    local texture_size = start:GetTexture():GetTextureWidth()
-    basezoom = real_size / texture_size
-    -- cell_data = { {"start", "end"}, {"end", "start" }}
     self:SetDrawFunction(draw_function)
     self:Create()
     self:visible(false)
   end,
 }
 
-for k in pairs(Drawable) do
-  Dancefloor[#Dancefloor+1] = CreateSprite(k)
+for name, idx in pairs(Drawable) do
+  Dancefloor[#Dancefloor+1] = CreateSprite(name, idx)
 end
 
 --return Dancefloor
-
 
 return Def.ActorFrame{
   Dancefloor,
