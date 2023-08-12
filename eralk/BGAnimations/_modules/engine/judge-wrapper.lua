@@ -176,10 +176,6 @@ local function draw()
   end
   if animate then
     timer:queuecommand("BeginAnimate")
-    --[[
-    print("dold_frame", old_frame.min_row, old_frame.max_row, old_frame.min_col, old_frame.max_col)
-    print("dnew_frame", new_frame.min_row, new_frame.max_row, new_frame.min_col, new_frame.max_col)
-    --]]
     return
   end
   for k,v in pairs(new_frame) do old_frame[k] = v end
@@ -189,11 +185,6 @@ end
 local function transition(percentage)
   -- transition from old_frame to new_frame using simple linear interpolation
   local frame = {}
-  --[[
-  print(percentage)
-  print("old_frame", old_frame.min_row, old_frame.max_row, old_frame.min_col, old_frame.max_col)
-  print("new_frame", new_frame.min_row, new_frame.max_row, new_frame.min_col, new_frame.max_col)
-  --]]
   for k,v in pairs(old_frame) do
     frame[k] = lerp(percentage, v, new_frame[k])
   end
