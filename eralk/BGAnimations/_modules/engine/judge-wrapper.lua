@@ -12,6 +12,8 @@ local animation_duration = Constants.animation_duration
 local cells_per_row
 local cells_per_column
 local Judge
+local maze_data
+local curr_frame = {}
 
 -- contains the last drawn bounding box
 local old_frame = {}
@@ -27,27 +29,27 @@ local animation_in_progress
 
 local function cell_data_to_drawable_array(data)
   if data.is_wall then
-    return {Drawable.wall}
+    return {[Drawable.wall] = true}
   end
   local out = {}
-  out[1] = --[[data.is_robot and Drawable.empty_robot or--]](data.is_even and Drawable.empty_even or Drawable.empty_odd)
+  out[data.is_even and Drawable.empty_even or Drawable.empty_odd] = true
   if data.is_start then
-    out[#out+1] = Drawable.start
+    out[Drawable.start] = true
   end
   if data.is_end then
-    out[#out+1] = Drawable["end"]
+    out[Drawable["end"]] = true
   end
   if data.is_item then
-    out[#out+1] = ItemCountToDrawable[data.no_items]
+    out[ItemCountToDrawable[data.no_items]] = true
   end
   if data.is_robot then
-    out[#out+1] = RobotDirectionToDrawable[data.robot_dir]
+    out[RobotDirectionToDrawable[data.robot_dir]] = true
   end
   return out
 end
 
 local function add_shadow_to_cell(out, dir)
-  out[#out+1] = ShadowDirectionToDrawable[dir]
+  out[ShadowDirectionToDrawable[dir]] = true
 end
 
 local function cells_in_all_dirs(maze, row, col)
@@ -83,10 +85,6 @@ local function should_be_shadowed(maze, row, col, dir)
   return (not has_wall(maze, row1, col1)) and (not has_wall(maze, row2, col2))
 end
 
-local function in_bounds(val, min, max)
-  return val >= min and val <= max
-end
-
 local function out_of_frame(curr_pos, min, max)
   return curr_pos < min+(max-min)/3 or curr_pos > min+(max-min)*2/3
 end
@@ -105,62 +103,50 @@ local function center_robot_pos(curr_pos, dimen_size, maze_size)
          curr_pos + dimen_size // 2 - (dimen_size % 2 == 0 and 1 or 0)
 end
 
-local function broadcast_cell(cell)
-  MESSAGEMAN:Broadcast("CellUpdate", cell)
-end
-
-local function flush_draw()
-  MESSAGEMAN:Broadcast("FlushDraw")
-end
-
-local function draw_frame(frame)
-  -- draws the maze at the frame defined by the bounding box frame.{min,max}_{row,col}
+local function prepare_maze_data()
   local maze = Judge.maze
   local robot_state = Judge.robot_state
-  for row=math.floor(frame.min_row),math.ceil(frame.max_row) do
-    if maze[row] then
-      local row_pos = row - frame.min_row + 1
-      for col=math.floor(frame.min_col),math.ceil(frame.max_col) do
-        local col_pos = col - frame.min_col + 1
-        if maze[row][col] then
-          local cell = maze[row][col]
-          local is_wall = cell:is_wall()
-          local is_start = cell:is_start()
-          local is_end = cell:is_end()
-          local is_item = cell:is_item()
-          local no_items = cell:count_items()
-          local is_robot = robot_state.row == row and robot_state.col == col
-          local is_even = (row+col) % 2 == 0
-          local robot_dir = robot_state.orientation
-          local out_cell = cell_data_to_drawable_array({is_wall = is_wall,
-          is_start = is_start,
-          is_end = is_end,
-          is_item = is_item,
-          no_items = no_items,
-          is_robot = is_robot,
-          is_even = is_even,
-          robot_dir = robot_dir})
-          out_cell.row = row_pos
-          out_cell.col = col_pos
-          if not is_wall then
-            for nb_cell,dir in cells_in_all_dirs(maze, row, col) do
-              if nb_cell:is_wall() then
-                if should_be_shadowed(maze, row, col, dir)
-                  and in_bounds(nb_cell.row, math.floor(frame.min_row), math.ceil(frame.max_row))
-                  and in_bounds(nb_cell.col, math.floor(frame.min_col), math.ceil(frame.max_col)) then
-                  add_shadow_to_cell(out_cell, dir)
-                end
-              end
-            end
+  maze_data = {}
+  for row=1,maze.height do
+    maze_data[row] = maze_data[row] or {}
+    for col=1,maze.width do
+      local cell = maze[row][col]
+      local is_wall = cell:is_wall()
+      local is_start = cell:is_start()
+      local is_end = cell:is_end()
+      local is_item = cell:is_item()
+      local no_items = cell:count_items()
+      local is_robot = robot_state.row == row and robot_state.col == col
+      local is_even = (row+col) % 2 == 0
+      local robot_dir = robot_state.orientation
+      local out_cell = cell_data_to_drawable_array({is_wall = is_wall,
+      is_start = is_start,
+      is_end = is_end,
+      is_item = is_item,
+      no_items = no_items,
+      is_robot = is_robot,
+      is_even = is_even,
+      robot_dir = robot_dir})
+      maze_data[row][col] = out_cell
+      if not is_wall then
+        for nb_cell,dir in cells_in_all_dirs(maze, row, col) do
+          if nb_cell:is_wall() and should_be_shadowed(maze, row, col, dir) then
+            --and in_bounds(nb_cell.row, math.floor(frame.min_row), math.ceil(frame.max_row))
+            add_shadow_to_cell(out_cell, dir)
           end
-          broadcast_cell(out_cell)
         end
       end
     end
   end
-  flush_draw()
 end
 
+local function begin_animate()
+  if timer then
+    timer:aux(0)
+    animation_in_progress = true
+    timer:decelerate(animation_duration):aux(1)
+  end
+end
 
 local function draw()
   local maze = Judge.maze
@@ -175,63 +161,50 @@ local function draw()
     new_frame.min_col, new_frame.max_col = center_robot_pos(robot_state.col, max_cells_per_row, maze.width)
   end
   if animate then
-    timer:queuecommand("BeginAnimate")
+    begin_animate()
     return
   end
-  for k,v in pairs(new_frame) do old_frame[k] = v end
-  draw_frame(old_frame)
+  for k,v in pairs(new_frame) do old_frame[k] = v curr_frame[k] = v end
 end
 
 local function transition(percentage)
   -- transition from old_frame to new_frame using simple linear interpolation
-  local frame = {}
   for k,v in pairs(old_frame) do
-    frame[k] = lerp(percentage, v, new_frame[k])
+    curr_frame[k] = lerp(percentage, v, new_frame[k])
   end
-  draw_frame(frame)
 end
 
 
-local function draw_function(self)
-  self:queuecommand("QueueUpdate")
-end
-
-return function(judge)
-  return Def.ActorFrame{
-  InitCommand=function(self)
-    animation_in_progress = false
-    needs_redraw = true
-    self:visible(true)
-    self:SetDrawFunction(draw_function)
-  end,
-  QueueUpdateCommand=function(self)
-    if animation_in_progress then
-      self:queuecommand("Transition")
-    else
-      if needs_redraw then
-        self:queuecommand("QueueDraw")
-      end
-    end
-  end,
-  QueueDrawCommand=function()
-    draw()
-    needs_redraw = false
-  end,
-  TransitionCommand=function()
+local function draw_function()
+  if animation_in_progress then
     local aux = timer:getaux()
     transition(aux)
     if aux == 1 then
       animation_in_progress = false
       for k,v in pairs(new_frame) do old_frame[k] = v end
     end
+  else
+    if needs_redraw then
+      draw()
+      needs_redraw = false
+    end
+  end
+end
+
+return function(judge)
+  return Def.ActorFrame{
+  InitCommand=function(self)
+    prepare_maze_data()
+    animation_in_progress = false
+    needs_redraw = true
+    self:visible(true)
+    self:SetDrawFunction(draw_function)
   end,
-  OnCommand=function()
+  OnCommand=function(self)
     cells_per_column=math.min(max_cells_per_column, judge.maze.height)
     cells_per_row=math.min(max_cells_per_row, judge.maze.width)
-    MESSAGEMAN:Broadcast("CellsPerDimen", {
-      cells_per_column=cells_per_column,
-      cells_per_row=cells_per_row,
-    })
+    MESSAGEMAN:Broadcast("DataBind", {curr_frame=curr_frame, cells_per_column=cells_per_column,
+                                      cells_per_row=cells_per_row, maze_data=maze_data })
   end,
   Def.Quad{
     Name="Timer",
@@ -239,11 +212,6 @@ return function(judge)
       self:visible(false)
       timer = self
       self:aux(0)
-    end,
-    BeginAnimateCommand=function(self)
-      self:aux(0)
-      animation_in_progress = true
-      self:linear(animation_duration):aux(1)
     end,
   },
   Def.Actor{
@@ -254,10 +222,33 @@ return function(judge)
       self:sleep(animation_duration):queuecommand("Tick")
     end,
     TickCommand=function(self)
-      if Judge.judgment_received then return end -- TODO: implement command queueing
-        Judge:judge_next_command()
-        needs_redraw = true
-        self:sleep(animation_duration):queuecommand("Tick")
+      -- TODO: implement command queueing
+      if Judge.judgment_received then return end
+      local prev_row, prev_col, prev_dir = Judge.robot_state.row, Judge.robot_state.col, Judge.robot_state.orientation
+      local prev_item_cnt = Judge.maze[prev_row][prev_col]:count_items()
+      -- remove robot sprite
+      maze_data[prev_row][prev_col][RobotDirectionToDrawable[prev_dir]] = nil
+      -- remove item sprite
+      if ItemCountToDrawable[prev_item_cnt] then
+        maze_data[prev_row][prev_col][ItemCountToDrawable[prev_item_cnt]] = nil
+      end
+
+      Judge:judge_next_command()
+
+      local curr_row, curr_col, curr_dir = Judge.robot_state.row, Judge.robot_state.col, Judge.robot_state.orientation
+      local curr_item_cnt = Judge.maze[curr_row][curr_col]:count_items()
+      if curr_row ~= prev_row or curr_col ~= prev_col then
+        local item_cnt = Judge.maze[prev_row][prev_col]:count_items()
+        if ItemCountToDrawable[item_cnt] then
+          maze_data[prev_row][prev_col][ItemCountToDrawable[item_cnt]] = true
+        end
+      end
+      maze_data[curr_row][curr_col][RobotDirectionToDrawable[curr_dir]] = true
+      if ItemCountToDrawable[curr_item_cnt] then
+        maze_data[curr_row][curr_col][ItemCountToDrawable[curr_item_cnt]] = true
+      end
+      needs_redraw = true
+      self:sleep(animation_duration):queuecommand("Tick")
     end,
 
     ExecuteInQueueCommand=function(self)

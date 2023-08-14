@@ -57,9 +57,12 @@ end
 
 local function create_enum(t)
   local res = {}
+  local _len
   for k,v in ipairs(t) do
     res[v] = k
+    _len = k
   end
+  res._len = _len
   return res
 end
 
@@ -74,6 +77,10 @@ local Drawable = create_enum{
   "item3",
   "item4",
   "wall",
+  "robot_north",
+  "robot_east",
+  "robot_south",
+  "robot_west",
   "shadow_north",
   "shadow_east",
   "shadow_south",
@@ -82,10 +89,6 @@ local Drawable = create_enum{
   "shadow_northwest",
   "shadow_southeast",
   "shadow_northeast",
-  "robot_north",
-  "robot_east",
-  "robot_south",
-  "robot_west",
 }
 
 
@@ -96,7 +99,7 @@ local ItemCountToDrawable = {
   Drawable.item4,
 }
 
-local IC_mt = { __index = function(self, _) return self[#self] end}
+local IC_mt = { __index = function(self, key) if key == 0 then return nil end return self[#self] end}
 setmetatable(ItemCountToDrawable, IC_mt)
 
 local ShadowDirectionToDrawable = {
