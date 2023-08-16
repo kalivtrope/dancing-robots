@@ -29,8 +29,8 @@ local Interpreter = require("interpreter.interpreter")
 
 -- TODO I'll keep this this until the engine and interpreter are properly connected
 -- then I'll try to create a new screen for choosing a game
-local input_name = "example_n10.in"
-local output_name = "example_n10.out"
+local input_name = "example_n50.in"
+local output_name = "example_n50.out"
 local input_path = THEME:GetPathB("", "_gamedata/Inputs/"..input_name)
 local output_path = THEME:GetPathB("", "_gamedata/Outputs/"..output_name)
 local input_str = assert(lua.ReadFile(input_path))
@@ -94,10 +94,11 @@ return Def.ActorFrame {
         end
       end
     self:sleep(9e9) end,
+    ---[[
     Def.Quad{
       Name="Blank background baby",
       OnCommand=function(self) self:FullScreen():diffuse(0,0,0,1) end -- blank background baby
-    },
+    },--]]
     JudgeWrapper,
     Dancefloor,
     Proxies,
