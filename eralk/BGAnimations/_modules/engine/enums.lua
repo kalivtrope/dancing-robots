@@ -69,14 +69,12 @@ end
 local Drawable = create_enum{
   "empty_even",
   "empty_odd",
-  "empty_robot",
   "start",
   "end",
   "item",
   "item2",
   "item3",
   "item4",
-  "wall",
   "robot_north",
   "robot_east",
   "robot_south",
@@ -89,6 +87,7 @@ local Drawable = create_enum{
   "shadow_northwest",
   "shadow_southeast",
   "shadow_northeast",
+  "wall",
 }
 
 

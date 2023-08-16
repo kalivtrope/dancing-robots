@@ -175,7 +175,7 @@ local function transition(percentage)
 end
 
 
-local function draw_function()
+local function update_function()
   if animation_in_progress then
     local aux = timer:getaux()
     transition(aux)
@@ -197,8 +197,8 @@ return function(judge)
     prepare_maze_data()
     animation_in_progress = false
     needs_redraw = true
-    self:visible(true)
-    self:SetDrawFunction(draw_function)
+    self:visible(false)
+    self:SetUpdateFunction(update_function):SetUpdateFPS(60)
   end,
   OnCommand=function(self)
     cells_per_column=math.min(max_cells_per_column, judge.maze.height)
