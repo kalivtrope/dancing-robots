@@ -135,6 +135,7 @@ local function prepare_maze_data()
       end
     end
   end
+  maze_data.version = 0
 end
 
 local function begin_animate()
@@ -179,9 +180,12 @@ local function transition(percentage)
 end
 
 local function write_current_frame()
+  --print("write called")
   if animation_in_progress then
-    local aux = timer:getaux()
+    local aux = timer:getaux() -- and 1 -- uncomment this to turn off animations
     transition(aux)
+    maze_data.version = maze_data.version + 1
+    --print("newa:", maze_data.version)
     if aux == 1 then
       animation_in_progress = false
       for k,v in pairs(new_frame) do
@@ -191,6 +195,8 @@ local function write_current_frame()
   else
     if needs_refresh then
       refresh_frame_data()
+      maze_data.version = maze_data.version + 1
+      --print("new:", maze_data.version)
       needs_refresh = false
     end
   end
@@ -219,13 +225,8 @@ return function(judge)
       self:aux(0)
     end,
   },
-  Def.Actor{
-    Name="JudgeWrapper",
-    InitCommand=function(self)
-      Judge = judge
-      maze = Judge.maze
-      robot_state = Judge.robot_state
-    end,
+  Def.Quad{
+    Name="TimerTMP",
     OnCommand=function(self)
       self:visible(false)
       self:sleep(animation_duration):queuecommand("Tick")
@@ -258,8 +259,16 @@ return function(judge)
       end
       needs_refresh = true
       self:sleep(animation_duration):queuecommand("Tick")
+    end
+  },
+  Def.Actor{
+    Name="JudgeWrapper",
+    InitCommand=function(self)
+      Judge = judge
+      maze = Judge.maze
+      robot_state = Judge.robot_state
+      self:visible(false)
     end,
-
     CurrentFrameCommand=function()
       write_current_frame()
     end,

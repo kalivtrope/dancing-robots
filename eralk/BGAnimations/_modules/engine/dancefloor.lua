@@ -17,6 +17,7 @@ local cells_per_row = nil
 local Enums = require("engine.enums")
 local Drawable = Enums.Drawable
 local DrawableToSprite = {}
+local last_drawn_version
 
 local function CreateSprite(name, idx)
   return Def.Sprite {
@@ -105,9 +106,15 @@ local DancefloorActor = Def.ActorMultiVertex{
       string.format("invalid number of cells per column (got '%s')", cells_per_row))
   end,
   InitCommand=function(self)
+    last_drawn_version = -1
     self:zwrite(false):ztest(false):SetDrawState{Mode='DrawMode_Quads', First=1, Num=-1}:SetTextureFiltering(false)
   end,
   RefreshCommand=function(self)
+    if maze_data and ((maze_data.version or 0) == last_drawn_version) then
+      self:Draw()
+      return
+    end
+    last_drawn_version = maze_data.version
     self:SetNumVertices(num_verts_per_tile)
     local min_row, min_col, max_row, max_col
       = curr_frame.min_row, curr_frame.min_col, curr_frame.max_row, curr_frame.max_col
