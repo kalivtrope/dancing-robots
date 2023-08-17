@@ -6,6 +6,11 @@
 mkdir -p ~/.project-outfox/Themes/
 ln -sr eralk ~/.project-outfox/Themes/eralk
 ```
+- next up, open OutFox and adjust your preferences:
+  - Resolution:
+    - Options -> Display & Graphics -> Display and Resolution (set the correct resolution here)
+  - Select this theme:
+    - Options -> User experience -> Appearance options -> Theme (select ERALK)
 - * TODO explain what `this` refers to
 ### So how would users play this?
 - TODO: `make userEnv` should prepare a folder `ERALK` with everything that's needed
