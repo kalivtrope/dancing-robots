@@ -23,7 +23,7 @@ local new_frame = {}
 -- Actor that keeps a timer for maintaining animations
 local timer
 
-local needs_redraw
+local needs_refresh
 local animation_in_progress
 
 
@@ -52,7 +52,7 @@ local function add_shadow_to_cell(out, dir)
   out[ShadowDirectionToDrawable[dir]] = true
 end
 
-local function cells_in_all_dirs(maze, row, col)
+local function cells_in_all_dirs(row, col)
   local dir_idx = 0
   return function()
     dir_idx = dir_idx+1
@@ -72,17 +72,17 @@ local function cells_in_all_dirs(maze, row, col)
   end
 end
 
-local function has_wall(maze, row, col)
+local function has_wall(row, col)
   return maze[row] and maze[row][col] and maze[row][col]:is_wall()
 end
 
-local function should_be_shadowed(maze, row, col, dir)
+local function should_be_shadowed(row, col, dir)
   -- assuming there's a wall in the given cell's direction already
   if not Direction.is_diagonal(dir) then return true end
   local dir1, dir2 = Direction.decompose(dir)
   local row1, col1 = Direction.step(row, col, dir1)
   local row2, col2 = Direction.step(row, col, dir2)
-  return (not has_wall(maze, row1, col1)) and (not has_wall(maze, row2, col2))
+  return (not has_wall(row1, col1)) and (not has_wall(row2, col2))
 end
 
 local function out_of_frame(curr_pos, min, max)
@@ -104,8 +104,6 @@ local function center_robot_pos(curr_pos, dimen_size, maze_size)
 end
 
 local function prepare_maze_data()
-  local maze = Judge.maze
-  local robot_state = Judge.robot_state
   maze_data = {}
   for row=1,maze.height do
     maze_data[row] = maze_data[row] or {}
@@ -129,9 +127,8 @@ local function prepare_maze_data()
       robot_dir = robot_dir})
       maze_data[row][col] = out_cell
       if not is_wall then
-        for nb_cell,dir in cells_in_all_dirs(maze, row, col) do
-          if nb_cell:is_wall() and should_be_shadowed(maze, row, col, dir) then
-            --and in_bounds(nb_cell.row, math.floor(frame.min_row), math.ceil(frame.max_row))
+        for nb_cell,dir in cells_in_all_dirs(row, col) do
+          if nb_cell:is_wall() and should_be_shadowed(row, col, dir) then
             add_shadow_to_cell(out_cell, dir)
           end
         end
@@ -192,9 +189,9 @@ local function write_current_frame()
       end
     end
   else
-    if needs_redraw then
+    if needs_refresh then
       refresh_frame_data()
-      needs_redraw = false
+      needs_refresh = false
     end
   end
 end
@@ -205,7 +202,7 @@ return function(judge)
   InitCommand=function(self)
     prepare_maze_data()
     animation_in_progress = false
-    needs_redraw = true
+    needs_refresh = true
     self:visible(false)
   end,
   OnCommand=function(self)
@@ -259,7 +256,7 @@ return function(judge)
       if ItemCountToDrawable[curr_item_cnt] then
         maze_data[curr_row][curr_col][ItemCountToDrawable[curr_item_cnt]] = true
       end
-      needs_redraw = true
+      needs_refresh = true
       self:sleep(animation_duration):queuecommand("Tick")
     end,
 
