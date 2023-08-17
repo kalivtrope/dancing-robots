@@ -29,6 +29,7 @@ local function CreateSprite(name, idx)
       self:basezoomx(display_ratio)
       self:basezoomy(display_ratio)
       self:xy(real_size/2 + (idx-1)*real_size,real_size/2)
+      self:SetTextureFiltering(false)
     end,
   }
 end
@@ -118,30 +119,6 @@ local DancefloorSprites=Def.ActorFrameTexture{
    end
  end
 
-local function dancefloor_update()
-    local min_row, min_col, max_row, max_col
-      = curr_frame.min_row, curr_frame.min_col, curr_frame.max_row, curr_frame.max_col
-    local min_rowf, min_colf, max_rowc, max_colc
-      = math.floor(min_row), math.floor(min_col), math.ceil(max_row), math.ceil(max_col)
-    Dancefloor:SetNumVertices(num_verts_per_tile * (max_rowc - min_rowf + 1) * (max_colc - min_colf + 1))
-    local vert_index = 1
-    for row=min_rowf,max_rowc do
-      if maze_data[row] then
-        for col=min_colf,max_colc do
-          local cell = maze_data[row][col]
-          if cell then
-            for i=1,Drawable._len do
-              if cell[i] then
-                Dancefloor:SetVertices(vert_index, place_drawable_at_pos(i, col-min_col+1, row-min_row+1))
-                vert_index = vert_index + num_verts_per_tile
-              end
-            end
-          end
-        end
-      end
-    end
-end
-
 local DancefloorActor = Def.ActorMultiVertex{
   Name="Dancefloor",
   Texture="DancefloorSprites",
@@ -156,7 +133,7 @@ local DancefloorActor = Def.ActorMultiVertex{
       string.format("invalid number of cells per column (got '%s')", cells_per_row))
   end,
   InitCommand=function(self)
-    self:zwrite(false):ztest(false):SetDrawState{Mode='DrawMode_Quads', First=1, Num=-1}:SetTextureFiltering(true)
+    self:zwrite(false):ztest(false):SetDrawState{Mode='DrawMode_Quads', First=1, Num=-1}:SetTextureFiltering(false)
     Dancefloor = self
   end,
   RefreshCommand=function(self)
