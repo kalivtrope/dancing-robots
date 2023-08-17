@@ -225,11 +225,13 @@ return function(judge)
       self:aux(0)
     end,
   },
-  Def.Quad{
-    Name="TimerTMP",
-    OnCommand=function(self)
-      self:visible(false)
-      self:sleep(animation_duration):queuecommand("Tick")
+  Def.Actor{
+    Name="JudgeWrapper",
+    InitCommand=function(self)
+      Judge = judge
+      maze = Judge.maze
+      robot_state = Judge.robot_state
+      self:visible(false):sleep(animation_duration):queuecommand("Tick")
     end,
     TickCommand=function(self)
       -- TODO: implement command queueing
@@ -259,16 +261,8 @@ return function(judge)
       end
       needs_refresh = true
       self:sleep(animation_duration):queuecommand("Tick")
-    end
-  },
-  Def.Actor{
-    Name="JudgeWrapper",
-    InitCommand=function(self)
-      Judge = judge
-      maze = Judge.maze
-      robot_state = Judge.robot_state
-      self:visible(false)
     end,
+
     CurrentFrameCommand=function()
       write_current_frame()
     end,
