@@ -54,6 +54,8 @@ local max_pn = 2
 local main_player = 1
 local P = {}
 
+local judge_wrapper, dancefloor, proxies
+
 local function setupPlayerProxy(proxy, target)
   proxy:SetTarget(target)
   target:visible(false):x(scx)
@@ -82,23 +84,32 @@ local Proxies = Def.ActorFrame {
   Def.ActorProxy{ Name="P2" },
 }
 
+local function draw_function()
+  judge_wrapper:playcommand("CurrentFrame")
+  dancefloor:playcommand("Refresh")
+  proxies:Draw()
+end
+
 return Def.ActorFrame {
     OnCommand=function(self)
       prepareVariables()
+      judge_wrapper = self:GetChild("JudgeWrapperClockwork"):GetChild("JudgeWrapper")
+      dancefloor = self:GetChild("DancefloorAF"):GetChild("Dancefloor")
+      proxies = self:GetChild("Proxies")
       for pn = 1, max_pn do
         if P[pn] then
-          local proxies = self:GetChild("Proxies") -- original value gets swept by the GC so we access it via GetChild
           setupPlayerProxy(proxies:GetChild("P" .. pn), P[pn])
           setupJudgeProxy(proxies:GetChild("P" .. pn .. "Combo"), P[pn]:GetChild("Combo"), pn)
           setupJudgeProxy(proxies:GetChild("P" .. pn .. "Judgment"), P[pn]:GetChild("Judgment"), pn)
         end
       end
-    self:sleep(9e9) end,
-    ---[[
+    self:SetDrawFunction(draw_function) end,
+    --[[
     Def.Quad{
       Name="Blank background baby",
       OnCommand=function(self) self:FullScreen():diffuse(0,0,0,1) end -- blank background baby
     },--]]
+    Def.Actor{ OnCommand=function(self) self:sleep(9e9) end},
     JudgeWrapper,
     Dancefloor,
     Proxies,

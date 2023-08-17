@@ -11,7 +11,7 @@ local max_cells_per_row = Constants.max_cells_per_row
 local animation_duration = Constants.animation_duration
 local cells_per_row
 local cells_per_column
-local Judge
+local Judge, maze, robot_state
 local maze_data
 local curr_frame = {}
 
@@ -148,23 +148,30 @@ local function begin_animate()
   end
 end
 
-local function draw()
-  local maze = Judge.maze
-  local robot_state = Judge.robot_state
+local function refresh_frame_data()
   local animate = false
-  if not old_frame.min_row or out_of_frame(robot_state.row, old_frame.min_row, old_frame.max_row) then
-    if old_frame.min_row then animate = true end
-    new_frame.min_row, new_frame.max_row = center_robot_pos(robot_state.row, max_cells_per_column, maze.height)
+  if not old_frame.min_row
+     or out_of_frame(robot_state.row, old_frame.min_row, old_frame.max_row) then
+     if old_frame.min_row then
+       animate = true
+     end
+     new_frame.min_row, new_frame.max_row = center_robot_pos(robot_state.row, max_cells_per_column, maze.height)
   end
-  if not old_frame.min_col or out_of_frame(robot_state.col, old_frame.min_col, old_frame.max_col) then
-    if old_frame.min_col then animate = true end
+  if not old_frame.min_col
+     or out_of_frame(robot_state.col, old_frame.min_col, old_frame.max_col) then
+    if old_frame.min_col then
+      animate = true
+    end
     new_frame.min_col, new_frame.max_col = center_robot_pos(robot_state.col, max_cells_per_row, maze.width)
   end
   if animate then
     begin_animate()
     return
   end
-  for k,v in pairs(new_frame) do old_frame[k] = v curr_frame[k] = v end
+  for k,v in pairs(new_frame) do
+    old_frame[k] = v
+    curr_frame[k] = v
+  end
 end
 
 local function transition(percentage)
@@ -174,18 +181,19 @@ local function transition(percentage)
   end
 end
 
-
-local function update_function()
+local function write_current_frame()
   if animation_in_progress then
     local aux = timer:getaux()
     transition(aux)
     if aux == 1 then
       animation_in_progress = false
-      for k,v in pairs(new_frame) do old_frame[k] = v end
+      for k,v in pairs(new_frame) do
+        old_frame[k] = v
+      end
     end
   else
     if needs_redraw then
-      draw()
+      refresh_frame_data()
       needs_redraw = false
     end
   end
@@ -193,12 +201,12 @@ end
 
 return function(judge)
   return Def.ActorFrame{
+  Name="JudgeWrapperClockwork",
   InitCommand=function(self)
     prepare_maze_data()
     animation_in_progress = false
     needs_redraw = true
     self:visible(false)
-    self:SetUpdateFunction(update_function):SetUpdateFPS(60)
   end,
   OnCommand=function(self)
     cells_per_column=math.min(max_cells_per_column, judge.maze.height)
@@ -216,7 +224,11 @@ return function(judge)
   },
   Def.Actor{
     Name="JudgeWrapper",
-    InitCommand=function(self) Judge = judge end,
+    InitCommand=function(self)
+      Judge = judge
+      maze = Judge.maze
+      robot_state = Judge.robot_state
+    end,
     OnCommand=function(self)
       self:visible(false)
       self:sleep(animation_duration):queuecommand("Tick")
@@ -249,6 +261,10 @@ return function(judge)
       end
       needs_redraw = true
       self:sleep(animation_duration):queuecommand("Tick")
+    end,
+
+    CurrentFrameCommand=function()
+      write_current_frame()
     end,
 
     ExecuteInQueueCommand=function(self)

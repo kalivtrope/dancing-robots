@@ -16,7 +16,6 @@ local cells_per_row = nil
 
 local Enums = require("engine.enums")
 local Drawable = Enums.Drawable
-local Dancefloor
 local DrawableToSprite = {}
 
 local function CreateSprite(name, idx)
@@ -147,7 +146,6 @@ local DancefloorActor = Def.ActorMultiVertex{
   Name="Dancefloor",
   Texture="DancefloorSprites",
   DataBindMessageCommand=function(_,params)
-    --print("received data bind")
     maze_data = params.maze_data
     curr_frame = params.curr_frame
     cells_per_row = params.cells_per_row
@@ -158,22 +156,16 @@ local DancefloorActor = Def.ActorMultiVertex{
       string.format("invalid number of cells per column (got '%s')", cells_per_row))
   end,
   InitCommand=function(self)
-    --print("init")
     self:zwrite(false):ztest(false):SetDrawState{Mode='DrawMode_Quads', First=1, Num=-1}:SetTextureFiltering(true)
     Dancefloor = self
   end,
-  OnCommand=function(self)
-    --self:queuecommand("Refresh")
-  end,
   RefreshCommand=function(self)
-    --print("Update")
     self:SetNumVertices(num_verts_per_tile)
     local min_row, min_col, max_row, max_col
       = curr_frame.min_row, curr_frame.min_col, curr_frame.max_row, curr_frame.max_col
     local min_rowf, min_colf, max_rowc, max_colc
       = math.floor(min_row), math.floor(min_col), math.ceil(max_row), math.ceil(max_col)
-    self:SetNumVertices(num_verts_per_tile * (max_rowc - min_rowf + 1) * (max_colc - min_colf + 1))
-    --print("num verts", self:GetNumVertices())
+    self:SetNumVertices(num_verts_per_tile * (cells_per_column + 1) * (cells_per_row + 1) * 16)
     local vert_index = 1 -- ig?
     for row=min_rowf,max_rowc do
       if maze_data[row] then
@@ -190,50 +182,12 @@ local DancefloorActor = Def.ActorMultiVertex{
         end
       end
     end
-    self:sleep(1/4):queuecommand("Refresh")
+    self:SetNumVertices(vert_index):Draw()
   end,
 }
---[[
-local Dancefloor = Def.ActorFrame{
-  Name="Dancefloor",
-  DataBindMessageCommand=function(_,params)
-    maze_data = params.maze_data
-    curr_frame = params.curr_frame
-    cells_per_row = params.cells_per_row
-    cells_per_column = params.cells_per_column
-    assert(type(cells_per_column) == "number" and cells_per_column > 0 and cells_per_column <= max_cells_per_column,
-      string.format("invalid number of cells per column (got '%s')", cells_per_column))
-    assert(type(cells_per_row) == "number" and cells_per_row > 0 and cells_per_row <= max_cells_per_row,
-      string.format("invalid number of cells per column (got '%s')", cells_per_row))
-  end,
-  InitCommand=function(self)
-    self:xy(scx, scy)
-    self:SetDrawFunction(draw_function)
-  end,
-}
---]]
-
---[[
- for name, idx in pairs(Drawable) do
-   if name ~= "_len" then
-     Dancefloor[#Dancefloor+1] = CreateSprite(name, idx)
-   end
- end
---]]
 
 return Def.ActorFrame{
-  OnCommand=function(self)
-    self:SetUpdateFunction(dancefloor_update):SetUpdateFPS(60)
-  end,
+  Name="DancefloorAF",
   DancefloorSprites,
   DancefloorActor,
 }
---[[
-return Def.ActorFrame{
-  Name="dancefloorAF",
-  Dancefloor,
-  Def.Sprite{
-    Texture="dancefloorAFT",
-    InitCommand=function(self) self:Center() end,
-  },
-}--]]
