@@ -1,9 +1,9 @@
 local Debug = {}
 
-local debugOn = true
+local debug_on = true
 
 
-local function msgFromSeq(...)
+local function msg_from_seq(...)
   local msg = ""
   local useSpaces = false
   for _, v in ipairs({...}) do
@@ -18,21 +18,26 @@ local function msgFromSeq(...)
 end
 
 
-function Debug.screenMsg(...)
-  if debugOn then
-    SCREENMAN:SystemMessage(msgFromSeq(...))
+function Debug.screen_msg(...)
+  if debug_on then
+    SCREENMAN:SystemMessage(msg_from_seq(...))
   end
 end
 
-function Debug.logMsg(...)
-  if debugOn then
-    _G.Trace(msgFromSeq(...))
+function Debug.stderr_msg(...)
+  if debug_on then
+    print(msg_from_seq(...))
   end
 end
 
+function Debug.log_msg(...)
+  if debug_on then
+    _G.Trace(msg_from_seq(...))
+  end
+end
 
-function Debug.logTable(table)
-  if debugOn then
+function Debug.log_table(table)
+  if debug_on then
     _G.rec_print_table(table)
   end
 end
