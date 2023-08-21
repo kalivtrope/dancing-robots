@@ -1,6 +1,3 @@
-if IsGame("dance") and GAMESTATE:GetCurrentStyle():GetName() == "single" or GAMESTATE:GetCurrentStyle():GetName() == "versus" then
-
-
 -- modify package path to make the require command work
 package.path = "./_modules/?.lua;" .. package.path
 -- add a custom searcher utilizing FILEMAN because we don't have direct access to the filesystem here
@@ -24,7 +21,23 @@ local function load(modname)
 end
 table.insert(package.searchers, 2, load)
 
+local function get_player(pn)
+  return SCREENMAN:GetTopScreen():GetChild('PlayerP' .. pn)
+end
+
 local Debug = require("engine.debug")
+local RecognizedTypes = require("engine.recognized-types")
+local is_recognized_style_type = RecognizedTypes.is_recognized_style_type
+local should_distinguish_player_score = RecognizedTypes.should_distinguish_player_score
+
+local curr_style_type = GAMESTATE:GetCurrentStyle():GetStyleType()
+if not is_recognized_style_type(curr_style_type) then
+  Debug.screenMsg("Unrecognized style type:", curr_style_type)
+  return Def.Actor{}
+end
+
+local max_pn = require("engine.constants").max_pn
+
 local Interpreter = require("interpreter.interpreter")
 
 -- TODO I'll keep this this until the engine and interpreter are properly connected
@@ -41,6 +54,8 @@ local judge = require("judges."..int.game.type.."-judge"):attach_to_interpreter(
 
 local JudgeWrapper = require("engine.judge-wrapper")( judge )
 local Dancefloor = require("engine.dancefloor")
+local InstructionDispatcher = require("engine.instruction-dispatcher")
+local JudgmentEmitter = require("engine.judgment-emitter")
 
 local sh = SCREEN_HEIGHT
 local sw = SCREEN_WIDTH
@@ -48,17 +63,18 @@ local height = sh / 480
 local width = sw / 640
 local scx = SCREEN_CENTER_X
 local scy = SCREEN_CENTER_Y
---local max_cells_per_column = 10
---local max_maze_width = 1 -- a float in range (0,1] denoting the max percentage of width taken up by the maze
-local max_pn = 2
-local main_player = 1
+
 local P = {}
 
 local judge_wrapper, dancefloor, proxies, blank
 
 local function setupPlayerProxy(proxy, target)
   proxy:SetTarget(target)
-  target:visible(false):x(scx)
+  target:visible(false)
+  -- center if there's only one notefield
+  if GAMESTATE:GetNumSidesJoined() == 1 then
+    target:x(scx)
+  end
 end
 
 local function setupJudgeProxy(proxy, target, pn)
@@ -68,9 +84,8 @@ end
 
 local function prepareVariables()
   for pn = 1, max_pn do
-    local player = SCREENMAN:GetTopScreen():GetChild('PlayerP' .. pn)
+    local player = get_player(pn)
     P[pn] = player
-    if player then main_player = pn end
   end
 end
 
@@ -113,8 +128,8 @@ return Def.ActorFrame {
     },--]]
     Def.Actor{ OnCommand=function(self) self:sleep(9e9) end},
     JudgeWrapper,
+    InstructionDispatcher,
+    JudgmentEmitter,
     Dancefloor,
     Proxies,
   }
-
-else return Def.Actor{} end

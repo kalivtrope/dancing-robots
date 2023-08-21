@@ -146,6 +146,45 @@ local function begin_animate()
   end
 end
 
+local function end_animate_prematurely()
+  timer:finishtweening()
+end
+
+local function execute_one(randomize)
+  if Judge.judgment_received then return end
+  local prev_row, prev_col, prev_dir = Judge.robot_state.row, Judge.robot_state.col, Judge.robot_state.orientation
+  local prev_item_cnt = Judge.maze[prev_row][prev_col]:count_items()
+  -- remove robot sprite
+  maze_data[prev_row][prev_col][RobotDirectionToDrawable[prev_dir]] = nil
+  -- remove item sprite
+  if ItemCountToDrawable[prev_item_cnt] then
+    maze_data[prev_row][prev_col][ItemCountToDrawable[prev_item_cnt]] = nil
+  end
+
+  Judge:judge_next_command(randomize)
+
+  local curr_row, curr_col, curr_dir = Judge.robot_state.row, Judge.robot_state.col, Judge.robot_state.orientation
+  local curr_item_cnt = Judge.maze[curr_row][curr_col]:count_items()
+  if curr_row ~= prev_row or curr_col ~= prev_col then
+    local item_cnt = Judge.maze[prev_row][prev_col]:count_items()
+    if ItemCountToDrawable[item_cnt] then
+      maze_data[prev_row][prev_col][ItemCountToDrawable[item_cnt]] = true
+    end
+  end
+  maze_data[curr_row][curr_col][RobotDirectionToDrawable[curr_dir]] = true
+  if ItemCountToDrawable[curr_item_cnt] then
+    maze_data[curr_row][curr_col][ItemCountToDrawable[curr_item_cnt]] = true
+  end
+
+  needs_refresh = true
+end
+
+local function execute_n(n, randomize)
+  for _=1,n do
+    execute_one(randomize)
+  end
+end
+
 local function refresh_frame_data()
   local animate = false
   if not old_frame.min_row
@@ -182,7 +221,7 @@ end
 local function write_current_frame()
   --print("write called")
   if animation_in_progress then
-    local aux = timer:getaux() -- and 1 -- uncomment this to turn off animations
+    local aux = timer:getaux() -- and 1   -- uncomment this to turn off animations
     transition(aux)
     maze_data.version = maze_data.version + 1
     --print("newa:", maze_data.version)
@@ -216,8 +255,9 @@ return function(judge)
     cells_per_row=math.min(max_cells_per_row, judge.maze.width)
     MESSAGEMAN:Broadcast("DataBind", {curr_frame=curr_frame, cells_per_column=cells_per_column,
                                       cells_per_row=cells_per_row, maze_data=maze_data })
+    MESSAGEMAN:Broadcast("InstructionCount", {number_of_instructions = Judge.interpreter:count_instructions()})
   end,
-  Def.Quad{
+  Def.Actor{
     Name="Timer",
     InitCommand=function(self)
       self:visible(false)
@@ -231,62 +271,16 @@ return function(judge)
       Judge = judge
       maze = Judge.maze
       robot_state = Judge.robot_state
-      self:visible(false):sleep(animation_duration):queuecommand("Tick")
+      self:visible(false)
     end,
-    TickCommand=function(self)
-      -- TODO: implement command queueing
-      if Judge.judgment_received then return end
-      local prev_row, prev_col, prev_dir = Judge.robot_state.row, Judge.robot_state.col, Judge.robot_state.orientation
-      local prev_item_cnt = Judge.maze[prev_row][prev_col]:count_items()
-      -- remove robot sprite
-      maze_data[prev_row][prev_col][RobotDirectionToDrawable[prev_dir]] = nil
-      -- remove item sprite
-      if ItemCountToDrawable[prev_item_cnt] then
-        maze_data[prev_row][prev_col][ItemCountToDrawable[prev_item_cnt]] = nil
-      end
-
-      Judge:judge_next_command()
-
-      local curr_row, curr_col, curr_dir = Judge.robot_state.row, Judge.robot_state.col, Judge.robot_state.orientation
-      local curr_item_cnt = Judge.maze[curr_row][curr_col]:count_items()
-      if curr_row ~= prev_row or curr_col ~= prev_col then
-        local item_cnt = Judge.maze[prev_row][prev_col]:count_items()
-        if ItemCountToDrawable[item_cnt] then
-          maze_data[prev_row][prev_col][ItemCountToDrawable[item_cnt]] = true
-        end
-      end
-      maze_data[curr_row][curr_col][RobotDirectionToDrawable[curr_dir]] = true
-      if ItemCountToDrawable[curr_item_cnt] then
-        maze_data[curr_row][curr_col][ItemCountToDrawable[curr_item_cnt]] = true
-      end
-      needs_refresh = true
-      self:sleep(animation_duration):queuecommand("Tick")
-    end,
-
     CurrentFrameCommand=function()
       write_current_frame()
     end,
-
-    ExecuteInQueueCommand=function(self)
-      --for i=1,200000000 do
-
-      --end
-      --[[
-      instructionPointer = instructionPointer + 1
-      Debug.logMsg(GetTimeSinceStart(), instructionPointer)
-      Debug.screenMsg("NEXT", instructionPointer)
-      --]]
-    end,
     ExecuteNextMessageCommand=function(self, params)
-      -- TODO: prolly just roll a die here and enqueue a command
-      --[[
-      Debug.logMsg(GetTimeSinceStart(), "registered broadcast")
-      self:queuecommand("ExecuteInQueue")
-      Debug.logMsg(GetTimeSinceStart(), "finished broadcast")
-      --]]
-      --local certainty = params.certainty
-      --local id = params.id
-      --Debug.screenMsg("NEXT", certainty, id)
+      local randomize = params.randomize
+      local n = params.n
+      execute_n(n, randomize)
+      end_animate_prematurely()
     end,
   }
 }
