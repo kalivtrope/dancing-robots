@@ -21,8 +21,8 @@ function Interpreter:count_instructions()
   return #self.tokens
 end
 
-function Interpreter:report_error(line_no, err)
-  self.error_encountered = true
+function Interpreter:report_warning(line_no, err)
+  --self.error_encountered = true
   write_stderr(string.format("[line %d] error: %s\n", line_no, err))
 end
 
@@ -32,7 +32,7 @@ local function tokenize_one_line(self, line_no, line)
   for raw_token in string.gmatch(undashed_line, "%a+") do
     local token = string.upper(raw_token)
     if not Tokens[token] then
-      self:report_error(line_no, string.format("unknown command '%s'", raw_token))
+      self:report_warning(line_no, string.format("unknown command '%s'", raw_token))
     else
       tokens[#tokens + 1] = token
     end

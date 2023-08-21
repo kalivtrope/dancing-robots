@@ -1,3 +1,4 @@
+local debug_on = true
 local function dump(o)
   -- borrowed from: https://stackoverflow.com/questions/9168058/how-to-dump-a-table-to-console
    if type(o) == 'table' then
@@ -15,7 +16,13 @@ end
 return {
   dump = dump,
   write_stderr = function(msg)
-    io.stderr:write(msg)
+    if debug_on then
+      if io then
+        io.stderr:write(msg)
+      else
+        print(msg)
+      end
+    end
   end,
   assert_type = function (var, var_str, type_str)
     assert(type(var) == type_str, string.format("%s must be a %s (got %s)", var_str, type_str, type(var)))
