@@ -12,6 +12,11 @@ ln -sr eralk ~/.project-outfox/Themes/eralk
   - Select this theme:
     - Options -> User experience -> Appearance options -> Theme (select ERALK)
 - * TODO explain what `this` refers to
+#### Enabling additional debug options
+- to show FPS and other information about your audio/video status press F3+6 while anywhere in OutFox (you're looking for Rendering stats)
+- to show errors onscreen press F3+F6+8 (Toggle screen errors)
+- you may find all the logs in the `~/.project-outfox/Logs`
+  - the most useful log is probably gonna be `~/.project-outfox/Logs/ProjectOutfox-eralk.ThemeLua.<timestamp>.log` which also serves as stderr for custom lua scripts
 ### So how would users play this?
 - TODO: `make userEnv` should prepare a folder `ERALK` with everything that's needed
 - we give them a copy of `main.lua` along with (execute-only binaries of) the interpreter and judges to help debug on
