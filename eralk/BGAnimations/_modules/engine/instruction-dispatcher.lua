@@ -2,7 +2,7 @@ local Constants = require("engine.constants")
 local Debug = require("engine.debug")
 local Queue = require("data_structures.queue")
 local RecognizedTypes = require("engine.recognized-types")
-local min_notes_per_instruction, max_pn = Constants.min_notes_per_instruction, Constants.max_pn  -- pn = player_number
+local min_notes_per_batch, max_pn = Constants.min_notes_per_batch, Constants.max_pn  -- pn = player_number
 local should_distinguish_player_score = RecognizedTypes.should_distinguish_player_score
 local count_notes_from_note_data = RecognizedTypes.count_notes_from_note_data
 -- the local variables need to be (re)set on Init in these scripts
@@ -132,7 +132,7 @@ local function prepare_variables()
   N .. total_numbers_of_batches
   L .. instruction_per_batch
   R .. notes_per_batch
-  K .. min_notes_per_instruction
+  K .. min_notes_per_batch
 
   If the distinguish_player_score flag is true, then the only thing that's different for each player
   is notes_per_batch.
@@ -167,7 +167,7 @@ local function prepare_variables()
           error("notefield for player " .. pn .. " is empty")
         end
         total_number_of_batches = math.max(1, math.min(total_number_of_batches,
-                                           total_numbers_of_notes[pn] // min_notes_per_instruction))
+                                           total_numbers_of_notes[pn] // min_notes_per_batch))
         Debug.stderr_msg("total number of notes, p", pn, total_numbers_of_notes[pn])
       else
         total_numbers_of_notes[default_pn] =
@@ -180,7 +180,7 @@ local function prepare_variables()
   --  determine note count per batch along with the number of batches with an extra note
   if not distinguish_player_score then
     total_number_of_batches = math.max(1, math.min(total_number_of_batches,
-                                       total_numbers_of_notes[default_pn] // min_notes_per_instruction))
+                                       total_numbers_of_notes[default_pn] // min_notes_per_batch))
     batch_queues[default_pn] = Queue:new()
     notes_per_batch[default_pn] = total_numbers_of_notes[default_pn] // total_number_of_batches
     extra_notes[default_pn] = total_numbers_of_notes[default_pn] % total_number_of_batches
