@@ -81,11 +81,11 @@ function MatrixJudge:make_judgment()
   self.judgment_received = true
 end
 
-function MatrixJudge:judge_next_command()
+function MatrixJudge:judge_next_command(randomize)
   if self.interpreter.instruction_no == 0 then
     self:process_graph()
   end
-  return Judge.judge_next_command(self)
+  return Judge.judge_next_command(self,randomize)
 end
 
 return MatrixJudge

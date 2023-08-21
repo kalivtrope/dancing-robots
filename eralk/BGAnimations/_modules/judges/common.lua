@@ -63,11 +63,11 @@ function Judge:make_judgment()
   self.judgment_verdict = "judgment verdict"
 end
 
-function Judge:judge_next_command()
+function Judge:judge_next_command(randomize)
   -- the judge can simply let the next command execute and only start caring after exhausting all instructions
     -- or they can intervene anytime during the user code interpretation
     -- they may also collect relevant statistics here
-  self.interpreter:execute_next_command()
+  self.interpreter:execute_next_command(randomize)
   if self.interpreter.out_of_instructions or self.interpreter.error_encountered then
     self:make_judgment()
     return false

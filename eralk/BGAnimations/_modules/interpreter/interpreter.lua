@@ -17,6 +17,9 @@ Interpreter.__index = Interpreter
 
 local OUT_OF_INSTRUCTIONS = "OUT_OF_INSTRUCTIONS"
 
+function Interpreter:count_instructions()
+  return #self.tokens
+end
 
 function Interpreter:report_error(line_no, err)
   self.error_encountered = true
@@ -54,10 +57,10 @@ function Interpreter:last_command_executed()
   return Tokens[self.tokens[self.instruction_no]]
 end
 
-function Interpreter:execute_next_command()
+function Interpreter:execute_next_command(randomize)
   if self.out_of_instructions or self.error_encountered then return false end
   self.instruction_no = self.instruction_no + 1
-  local _cmd = Tokens[self.tokens[self.instruction_no]]
+  local _cmd = randomize and Tokens[math.random(1, Tokens._len)] or Tokens[self.tokens[self.instruction_no]]
   if not _cmd then
     self.out_of_instructions = true
     return OUT_OF_INSTRUCTIONS
@@ -85,6 +88,7 @@ function Interpreter:new(maze_configuration_str, player_input_str)
   local o = {}
   setmetatable(o, self)
   o.tokens = tokenize_file(o, player_input_str)
+  if (#o.tokens) == 0 then o.tokens[1] = "NOP" end
   if o.error_encountered then
     write_stderr("errors were encountered, refusing to continue.\n")
     return nil

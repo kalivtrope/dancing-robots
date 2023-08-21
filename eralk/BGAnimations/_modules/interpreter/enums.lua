@@ -61,6 +61,25 @@ for k,v in pairs(DirectionInv) do
   Direction[k] = v
 end
 
+local Tokens = {
+  TURNLEFT = "TURN_LEFT",
+  TURNRIGHT = "TURN_RIGHT",
+  COLLECT = "COLLECT",
+  DROP = "DROP",
+  MOVETOITEM = "MOVE_TO_ITEM",
+  MOVETOWALL = "MOVE_TO_WALL",
+  MOVETOSTART = "MOVE_TO_START",
+  MOVETOEND = "MOVE_TO_END",
+  NOP = "NOP",
+}
+
+local curr_idx = 1
+for _,v in pairs(Tokens) do
+  Tokens[curr_idx] = v
+  curr_idx = curr_idx + 1
+end
+Tokens._len = curr_idx - 1
+
 return {
   ObjectType = ObjectType,
   ObjectChar = ObjectChar,
@@ -77,15 +96,5 @@ return {
     WIN = 2,
     LOSE = 3,
   },
-  Tokens = {
-    TURNLEFT = "TURN_LEFT",
-    TURNRIGHT = "TURN_RIGHT",
-    COLLECT = "COLLECT",
-    DROP = "DROP",
-    MOVETOITEM = "MOVE_TO_ITEM",
-    MOVETOWALL = "MOVE_TO_WALL",
-    MOVETOSTART = "MOVE_TO_START",
-    MOVETOEND = "MOVE_TO_END",
-    NOP = "NOP",
-  }
+  Tokens = Tokens,
 }
