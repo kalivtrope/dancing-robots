@@ -1,4 +1,4 @@
-local logMsg = require("engine.debug").logMsg
+local log_msg = require("engine.debug").log_msg
 
 local function create_set(t)
   local res = {}
@@ -69,7 +69,7 @@ local RecognizedTapTypes = create_set {
   'TapNoteType_Tap',
   'TapNoteType_HoldHead',
   'TapNoteType_LongNoteHead', -- newly added in OutFox Alpha V, *should* supersede HoldHead
-  -- (got renamed to make more sense in gamemodes other than dance that don't make you physically hold notes I guess?)
+  -- (got renamed to make more sense in gamemodes other than dance that don't make you physically hold notes (I guess))
   --'TapNoteType_HoldTail',
   --'TapNoteType_LongNoteTail', -- supersedes HoldTail
   --'TapNoteType_Mine',
@@ -88,8 +88,10 @@ local RecognizedTapSubtypes = create_set {
 --  (by which I want to say: I realize the conditions that I test for
 --    may be a bit confusing, but that's just how the judgment objects are apparently constructed).
 -- there are currently three judgment function calls that we might choose to identify:
-  -- Tapnote judgment
-  -- Holdnote judgment
+  -- ("Tapnote") judgment - primarily for taps,
+  --                        but there may also appear e.g. hold tails if they're being judged at the same time
+  -- Holdnote judgment - used for holds not judged along with any taps
+  --                     (only the HoldHead notes appear here, I think)
   -- Mine judgment (we choose to ignore them in this code)
   -- See methods Player::SetJudgment, Player::SetHoldJudgment and Player::SetMineJudgment at SM src/Player.cpp
   --  for more information.
@@ -144,7 +146,8 @@ local function get_hold_notes_from_judgment(judgment)
   if is_hold_judgment(judgment)
     and is_recognized_hold_score(judgment.HoldNoteScore)
     and is_recognized_note_type(v:GetTapNoteType())
-      then notes[#notes + 1] = {Note = v, IsHit = is_hit_hold_score(judgment.HoldNoteScore)} end
+      then notes[#notes + 1] = {Note = v, IsHit = is_hit_hold_score(judgment.HoldNoteScore),
+                                Player = pname(judgment.Player)} end
   return notes
 end
 
@@ -153,21 +156,22 @@ local function get_tap_notes_from_judgment(judgment)
   local notes = {}
   if is_tap_judgment(judgment) then
     for _,v in pairs(judgment.Notes) do
-      logMsg(v:GetTapNoteType())
+      log_msg(v:GetTapNoteType())
       if v
         and is_recognized_tap_score(judgment.TapNoteScore)
         and is_recognized_note_type(v:GetTapNoteType())
-          then notes[#notes + 1] = {Note = v, IsHit = is_hit_tap_score(judgment.TapNoteScore)} end
+          then notes[#notes + 1] = {Note = v, IsHit = is_hit_tap_score(judgment.TapNoteScore),
+                                    Player = pname(judgment.Player)} end
     end
   end
   return notes
 end
 
-local function count_notes_from_judgment(note_data)
+local function count_notes_from_note_data(note_data)
   -- See OutFox docs for Player::GetNoteData
   -- The note_data parameter is an _array_ of NoteDataEntries.
-  -- The NoteDataEntry follows the structure
-  -- { beat, column, notetype, quantization, length = fBeatLen }
+  -- The NoteDataEntry follows the array structure
+  --   { beat, column, notetype, quantization, length = fBeatLen }
   -- We're only after the 3rd argument (notetype) here.
   local count = 0
   for _,note_data_entry in ipairs(note_data) do
@@ -183,6 +187,10 @@ local function count_notes_from_judgment(note_data)
   return count
 end
 
+local function is_recognized_style_type(style_type)
+  return RecognizedStyleTypes.DistinguishPlayerScore[style_type] or RecognizedStyleTypes.Other[style_type]
+end
+
 local function should_distinguish_player_score(style_type)
   return RecognizedStyleTypes.DistinguishPlayerScore[style_type] ~= nil
 end
@@ -190,8 +198,9 @@ end
 
 return {
   -- export helper functions for accessing and utilizing all of the enums defined above
-  count_notes_from_judgment = count_notes_from_judgment,
+  count_notes_from_note_data = count_notes_from_note_data,
   get_tap_notes_from_judgment = get_tap_notes_from_judgment,
   get_hold_notes_from_judgment = get_hold_notes_from_judgment,
   should_distinguish_player_score = should_distinguish_player_score,
+  is_recognized_style_type = is_recognized_style_type,
 }
