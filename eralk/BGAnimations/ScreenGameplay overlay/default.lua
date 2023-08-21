@@ -54,7 +54,7 @@ local max_pn = 2
 local main_player = 1
 local P = {}
 
-local judge_wrapper, dancefloor, proxies
+local judge_wrapper, dancefloor, proxies, blank
 
 local function setupPlayerProxy(proxy, target)
   proxy:SetTarget(target)
@@ -85,6 +85,7 @@ local Proxies = Def.ActorFrame {
 }
 
 local function draw_function()
+  blank:Draw()
   judge_wrapper:playcommand("CurrentFrame")
   dancefloor:playcommand("Refresh")
   proxies:Draw()
@@ -96,6 +97,7 @@ return Def.ActorFrame {
       judge_wrapper = self:GetChild("JudgeWrapperClockwork"):GetChild("JudgeWrapper")
       dancefloor = self:GetChild("DancefloorAF"):GetChild("Dancefloor")
       proxies = self:GetChild("Proxies")
+      blank = self:GetChild("Blank")
       for pn = 1, max_pn do
         if P[pn] then
           setupPlayerProxy(proxies:GetChild("P" .. pn), P[pn])
@@ -104,10 +106,10 @@ return Def.ActorFrame {
         end
       end
     self:SetDrawFunction(draw_function) end,
-    --[[
+    ---[[
     Def.Quad{
-      Name="Blank background baby",
-      OnCommand=function(self) self:FullScreen():diffuse(0,0,0,1) end -- blank background baby
+      Name="Blank",
+      OnCommand=function(self) self:FullScreen():diffuse(0,0,0,1) end -- blank background
     },--]]
     Def.Actor{ OnCommand=function(self) self:sleep(9e9) end},
     JudgeWrapper,
