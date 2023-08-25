@@ -1,26 +1,3 @@
--- modify package path to make the require command work
-package.path = "./_modules/?.lua;" .. package.path
--- add a custom searcher utilizing FILEMAN because we don't have direct access to the filesystem here
-local function load(modname)
-  local errmsg = ""
-  local modulepath = string.gsub(modname, "%.", "/")
-  for path in string.gmatch(package.path, "([^;]+)") do
-    local filename = THEME:GetPathB("", string.gsub(path, "%?", modulepath))
-    if not FILEMAN:DoesFileExist(filename) then
-      errmsg = errmsg .. "\n\tno file '" .. filename .. "' (custom loader)"
-    else
-      local loader, err = loadfile(filename)
-      if err then
-        error(err, 3)
-      elseif loader then
-        return loader
-      end
-    end
-  end
-  return errmsg
-end
-table.insert(package.searchers, 2, load)
-
 local function get_player(pn)
   return SCREENMAN:GetTopScreen():GetChild('PlayerP' .. pn)
 end
@@ -36,16 +13,19 @@ if not is_recognized_style_type(curr_style_type) then
   return Def.Actor{}
 end
 
-local max_pn = require("engine.constants").max_pn
+local Constants = require("engine.constants")
+local max_pn = Constants.max_pn
+local config_key = Constants.config_key
+local input_dir = Constants.input_path
+local output_dir = Constants.output_path
+local curr_config = GAMESTATE:Env()[config_key]
 
 local Interpreter = require("interpreter.interpreter")
 
 -- TODO I'll keep this this until the engine and interpreter are properly connected
 -- then I'll try to create a new screen for choosing a game
-local input_name = "example_n50.in"
-local output_name = "example_n50.out"
-local input_path = THEME:GetPathB("", "_gamedata/Inputs/"..input_name)
-local output_path = THEME:GetPathB("", "_gamedata/Outputs/"..output_name)
+local input_path = input_dir .. "/" .. curr_config ..  ".in"
+local output_path = output_dir .. "/" .. curr_config .. ".out"
 local input_str = assert(lua.ReadFile(input_path))
 local output_str = assert(lua.ReadFile(output_path))
 local int = Interpreter:new(input_str, output_str)

@@ -9,6 +9,11 @@ local total_texture_width = texture_size * num_sprites
 local min_notes_per_batch = 3
 local max_pn = 2
 
+local gamedata_path = THEME:GetPathB("", "_gamedata")
+local input_path = gamedata_path .. "/Inputs"
+local output_path = gamedata_path .. "/Outputs"
+local config_key = "ERALK_CONFIG"
+
 return {
   animation_duration = animation_duration,
   max_cells_per_column = max_cells_per_column,
@@ -19,4 +24,7 @@ return {
   total_texture_width = total_texture_width,
   min_notes_per_batch = min_notes_per_batch,
   max_pn = max_pn,
+  input_path = input_path,
+  output_path = output_path,
+  config_key = config_key,
 }
