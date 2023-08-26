@@ -48,7 +48,7 @@ return Def.ActorFrame{
       OnCommand=function(self)
         self:y(font_size_px*main_verdict_zoom + font_size_px*max_verdict_messages_displayed/2)
         local verdict_comments = (GAMESTATE:Env()[verdict_key] or {})[2] or ""
-        local pattern = string.rep("(.-)\r?\n", max_verdict_messages_displayed)
+        local pattern = "(.-)\r?\n"
         local match_result = ""
         local num_matches = 0
         for match in string.gmatch(verdict_comments, pattern) do

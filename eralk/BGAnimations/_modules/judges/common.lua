@@ -60,7 +60,7 @@ function Judge:make_judgment()
   end
   self.judgment_received = true
   self.judgment_success = true
-  self.judgment_verdict = "judgment verdict"
+  self.judgment_verdict = ""
 end
 
 function Judge:judge_next_command(randomize)
