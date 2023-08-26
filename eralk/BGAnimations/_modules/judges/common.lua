@@ -34,6 +34,37 @@ function Judge:test_if_robot_is_at_end()
   return ans
 end
 
+
+function Judge:test_if_everything_collected()
+  local maze = self.maze
+  local ans = true
+  for row=2,maze.height-1 do
+    for col=2,maze.width-1 do
+      if maze[row][col]:is_item() then
+        if row ~= maze.end_cell.row or col ~= maze.end_cell.col then
+          self:add_verdict(string.format("extra item at pos (%d,%d)", row, col))
+          ans = false
+        end
+      end
+    end
+  end
+  return ans
+end
+
+function Judge:test_if_inventory_emptied()
+  local ans = true
+  if self.robot_state.items_collected > 0 then
+    self:add_verdict(string.format("extra item%s left in inventory%s",
+                                    self.robot_state.items_collected == 1 and "" or "s",
+                                    self.robot_state.items_collected == 1 and "" or
+                                         " (" .. self.robot_state.items_collected .. ")"
+                                    ))
+    ans = false
+  end
+  return ans
+end
+
+
 function Judge:attach_to_interpreter(interpreter)
   local o = {}
   o.interpreter = interpreter

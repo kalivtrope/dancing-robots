@@ -81,6 +81,14 @@ function Cell:add_object(o)
   end
 end
 
+function Cell:remove_wall()
+  if not self:is_wall() then
+    return false
+  end
+  self.object_counts[ObjectType.WALL] = nil
+  return true
+end
+
 function Cell:remove_item()
   if not self:is_item() then
     return false
