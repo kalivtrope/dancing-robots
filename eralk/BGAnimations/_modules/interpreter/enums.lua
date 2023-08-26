@@ -87,9 +87,10 @@ return {
   Direction = Direction,
   GameType = {
     MATRIX = 'matrix',
-    MAZE = 'maze',
-    SORT = 'sort',
+    --MAZE = 'maze',
+    --SORT = 'sort',
     SORTP = 'sortp',
+    SPIRAL = 'spiral',
   },
   GameResult = {
     NONE = 1,
