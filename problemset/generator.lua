@@ -28,14 +28,14 @@ end
 
 function Generator:add_borders()
   for i=1,math.max(self.height, self.width) do
-    self.grid[i][1]:add_wall()
-    if i ~= 1 then
-      self.grid[1][i]:add_wall()
-    end
     if i <= self.height then
+      self.grid[i][1]:add_wall()
       self.grid[i][self.width]:add_wall()
     end
     if i <= self.width then
+      if i ~= 1 then
+        self.grid[1][i]:add_wall()
+      end
       self.grid[self.height][i]:add_wall()
     end
   end
