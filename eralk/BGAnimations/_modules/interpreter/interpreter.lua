@@ -7,6 +7,7 @@ local Game = require("interpreter.game")
 
 local Interpreter = {
   instruction_no = 0,
+  instruction_cnt = 0,
   error_encountered = false,
   out_of_instructions = false,
   tokens = nil,
@@ -60,16 +61,18 @@ end
 function Interpreter:execute_next_command(randomize)
   if self.out_of_instructions or self.error_encountered then return false end
   self.instruction_no = self.instruction_no + 1
-  local _cmd = randomize and Tokens[math.random(1, Tokens._len)] or Tokens[self.tokens[self.instruction_no]]
-  if not _cmd then
+  if self.instruction_no >= self.instruction_cnt then
     self.out_of_instructions = true
-    return OUT_OF_INSTRUCTIONS
   end
-  self.game[string.lower(_cmd)](self.game, self.instruction_no)
-  if self.game.error_encountered then
-    self.error_encountered = true
+  if self.instruction_no <= self.instruction_cnt then
+    local _cmd = randomize and Tokens[math.random(1, Tokens._len)] or Tokens[self.tokens[self.instruction_no]]
+    self.game[string.lower(_cmd)](self.game, self.instruction_no)
+    if self.game.error_encountered then
+      self.error_encountered = true
+    end
+    return _cmd
   end
-  return _cmd
+  return OUT_OF_INSTRUCTIONS
 end
 
 function Interpreter:execute_n_commands(n)
@@ -89,6 +92,7 @@ function Interpreter:new(maze_configuration_str, player_input_str)
   setmetatable(o, self)
   o.tokens = tokenize_file(o, player_input_str)
   if (#o.tokens) == 0 then o.tokens[1] = "NOP" end
+  self.instruction_cnt = #o.tokens
   if o.error_encountered then
     write_stderr("errors were encountered, refusing to continue.\n")
     return nil

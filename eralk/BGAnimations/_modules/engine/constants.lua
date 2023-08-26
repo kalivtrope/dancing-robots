@@ -13,6 +13,8 @@ local gamedata_path = THEME:GetPathB("", "_gamedata")
 local input_path = gamedata_path .. "/Inputs"
 local output_path = gamedata_path .. "/Outputs"
 local config_key = "ERALK_CONFIG"
+local verdict_key = "ERALK_VERDICT"
+local max_verdict_messages_displayed = 3
 
 return {
   animation_duration = animation_duration,
@@ -27,4 +29,6 @@ return {
   input_path = input_path,
   output_path = output_path,
   config_key = config_key,
+  verdict_key = verdict_key,
+  max_verdict_messages_displayed = max_verdict_messages_displayed,
 }

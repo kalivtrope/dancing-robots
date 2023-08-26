@@ -92,9 +92,8 @@ local function dispatch_processed_batches()
   end
 end
 
-local function inform_if_all_notes_processed()
+local function check_if_all_notes_processed()
   if processed_number_of_batches >= total_number_of_batches then
-    MESSAGEMAN:Broadcast('AllNotesProcessed')
     game_over = true
   end
 end
@@ -103,7 +102,7 @@ local function flush_batches()
   if game_over then return end
   enqueue_judgments()
   dispatch_processed_batches()
-  inform_if_all_notes_processed()
+  check_if_all_notes_processed()
   note_counter = note_counter + 1
   Debug.stderr_msg("# of notes", note_counter, "out of", total_numbers_of_notes[default_pn])
 end

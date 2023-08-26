@@ -9,10 +9,12 @@ local Direction = require("engine.enums").Direction
 local max_cells_per_column = Constants.max_cells_per_column
 local max_cells_per_row = Constants.max_cells_per_row
 local animation_duration = Constants.animation_duration
+local verdict_key = Constants.verdict_key
 local cells_per_row
 local cells_per_column
 local Judge, maze, robot_state
 local maze_data
+local judgment_set
 local curr_frame = {}
 
 -- contains the last drawn bounding box
@@ -70,6 +72,12 @@ local function cells_in_all_dirs(row, col)
     end
     return cell, dir
   end
+end
+
+local function set_judgment()
+  if judgment_set then return end
+  judgment_set = true
+  GAMESTATE:Env()[verdict_key] = {Judge.judgment_success, Judge.judgment_verdict}
 end
 
 local function has_wall(row, col)
@@ -151,7 +159,7 @@ local function end_animate_prematurely()
 end
 
 local function execute_one(randomize)
-  if Judge.judgment_received then return end
+  if Judge.judgment_received then set_judgment() return end
   local prev_row, prev_col, prev_dir = Judge.robot_state.row, Judge.robot_state.col, Judge.robot_state.orientation
   local prev_item_cnt = Judge.maze[prev_row][prev_col]:count_items()
   -- remove robot sprite
@@ -175,8 +183,8 @@ local function execute_one(randomize)
   if ItemCountToDrawable[curr_item_cnt] then
     maze_data[curr_row][curr_col][ItemCountToDrawable[curr_item_cnt]] = true
   end
-
   needs_refresh = true
+  if Judge.judgment_received then set_judgment() end
 end
 
 local function execute_n(n, randomize)
@@ -219,12 +227,10 @@ local function transition(percentage)
 end
 
 local function write_current_frame()
-  --print("write called")
   if animation_in_progress then
     local aux = timer:getaux() -- and 1   -- uncomment this to turn off animations
     transition(aux)
     maze_data.version = maze_data.version + 1
-    --print("newa:", maze_data.version)
     if aux == 1 then
       animation_in_progress = false
       for k,v in pairs(new_frame) do
@@ -235,7 +241,6 @@ local function write_current_frame()
     if needs_refresh then
       refresh_frame_data()
       maze_data.version = maze_data.version + 1
-      --print("new:", maze_data.version)
       needs_refresh = false
     end
   end
@@ -248,6 +253,7 @@ return function(judge)
     prepare_maze_data()
     animation_in_progress = false
     needs_refresh = true
+    judgment_set = false
     self:visible(false)
   end,
   OnCommand=function(self)
