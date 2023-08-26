@@ -48,17 +48,17 @@ function Cell:new(o)
 end
 
 function Cell:add_item()
-    assert(not self:is_wall(), string.format("cannot place item at wall (%d,%d)", self.row, self.col))
+    assert(not self:is_wall(), string.format("cannot place item into wall (%d,%d)", self.row, self.col))
     self.object_counts[ObjectType.ITEM] = (self.object_counts[ObjectType.ITEM] or 0) + 1
 end
 
 function Cell:add_start()
-    assert(not self:is_wall(), string.format("cannot place start/end at wall at pos (%d,%d)", self.row, self.col))
+    assert(not self:is_wall(), string.format("cannot place start/end into wall at pos (%d,%d)", self.row, self.col))
     self.object_counts[ObjectType.START] = 1
 end
 
 function Cell:add_end()
-    assert(not self:is_wall(), string.format("cannot place end at wall at pos (%d,%d)", self.row, self.col))
+    assert(not self:is_wall(), string.format("cannot place end into wall at pos (%d,%d)", self.row, self.col))
     self.object_counts[ObjectType.END] = 1
 end
 

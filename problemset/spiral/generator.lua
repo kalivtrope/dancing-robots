@@ -2,7 +2,7 @@ local SpiralGenerator = require("problemset.generator"):new()
 
 function SpiralGenerator.generate(params)
   local n = params.n
-  if type(n) ~= "number" or n < 1 then return nil end
+  if type(n) ~= "number" or n < 1 then error(string.format("invalid value for n: '%s'"), n) return nil end
   local gen = SpiralGenerator:new()
   local height = 4*n+2
   local width = 4*n+1

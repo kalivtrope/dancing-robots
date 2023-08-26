@@ -1,5 +1,5 @@
 local type_str = io.read("*line")
-assert(type_str == "matrix", string.format("wrong game type (expected 'sortp', got '%s')", type_str))
+assert(type_str == "matrix", string.format("wrong game type (expected 'matrix', got '%s')", type_str))
 --local height, width = io.read("*n", "*n", "*l")
 local n = (io.read("*n", "*n", "*l") - 2)
 local graph = {}
