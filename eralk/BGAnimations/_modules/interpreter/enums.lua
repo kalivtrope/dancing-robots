@@ -91,6 +91,7 @@ return {
     --SORT = 'sort',
     SORTP = 'sortp',
     SPIRAL = 'spiral',
+    COMB = 'comb',
   },
   GameResult = {
     NONE = 1,
