@@ -72,7 +72,6 @@ function MatrixJudge:test_if_path_found()
 end
 
 function MatrixJudge:make_judgment()
-  self:add_judgment(self:test_if_robot_survived())
   self:add_judgment(self:test_if_robot_is_at_end())
   self:add_judgment(self:test_if_path_found())
   if self.judgment_success then

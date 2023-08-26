@@ -23,14 +23,6 @@ function Judge:add_judgment(flag)
   self.judgment_success = self.judgment_success and flag
 end
 
-function Judge:test_if_robot_survived()
-  if self.interpreter.error_encountered then
-    self:add_verdict("robot crashed into a wall")
-    return false
-  end
-  return true
-end
-
 function Judge:test_if_robot_is_at_end()
   local robot_row, robot_col = self.robot_state.row, self.robot_state.col
   local end_row, end_col = self.maze.end_cell.row, self.maze.end_cell.col
