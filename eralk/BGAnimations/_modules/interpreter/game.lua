@@ -4,6 +4,7 @@ local Maze = require("interpreter.maze")
 local utils = require("interpreter.utils")
 local write_stderr, assert_bounds = utils.write_stderr, utils.assert_bounds
 local GameType, GameResult, Tokens = enums.GameType, enums.GameResult, enums.Tokens
+local show_warnings = false
 
 local Game = {
   maze = nil,
@@ -36,7 +37,9 @@ end
 
 function Game:report_warning(instruction_no, instruction_type, msg)
   self.warning_encountered = true
-  write_stderr(string.format("[instruction #%d %s] warning: %s\n", instruction_no, instruction_type, msg))
+  if show_warnings then
+    write_stderr(string.format("[instruction #%d %s] warning: %s\n", instruction_no, instruction_type, msg))
+  end
 end
 
 function Game:report_error(instruction_no, instruction_type, msg)
@@ -127,7 +130,7 @@ function Game:nop()
 end
 
 
-function Game:new(str)
+function Game:new(str, _show_warnings)
   -- expecting to parse this data:
     -- 'type_str' describes the according GameType
     -- 'maze_str'
@@ -155,6 +158,7 @@ function Game:new(str)
   setmetatable(o, self)
   o.maze = Maze:new({maze_str = maze_str, width=width, height=height})
   o.robot_state = RobotState:new{row = o.maze.start_cell.row, col = o.maze.start_cell.col }
+  show_warnings = _show_warnings
   return o
 end
 

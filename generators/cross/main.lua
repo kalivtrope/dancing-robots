@@ -1,8 +1,8 @@
-local CrossGenerator = require("problemset.generator"):new()
+local CrossGenerator = require("generators.common"):new()
 
 function CrossGenerator.generate(params)
   local n = params.n
-  if type(n) ~= "number" or n < 1 then error(string.format("invalid value for n: '%s'"), n) return nil end
+  if type(n) ~= "number" or n < 1 then n=10 end
   local gen = CrossGenerator:new()
   local size = 4*n+7
   gen:init("cross", size, size)

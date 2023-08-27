@@ -87,7 +87,7 @@ function Interpreter:execute_n_commands(n)
   return cmd_list
 end
 
-function Interpreter:new(maze_configuration_str, player_input_str)
+function Interpreter:new(maze_configuration_str, player_input_str, show_warnings)
   local o = {}
   setmetatable(o, self)
   o.tokens = tokenize_file(o, player_input_str)
@@ -97,7 +97,7 @@ function Interpreter:new(maze_configuration_str, player_input_str)
     write_stderr("errors were encountered, refusing to continue.\n")
     return nil
   end
-  o.game = Game:new(maze_configuration_str)
+  o.game = Game:new(maze_configuration_str, show_warnings)
   return o
 end
 

@@ -1,0 +1,12 @@
+turnleft
+movetoitem
+collect
+turnleft
+movetoitem
+movetoitem
+turnleft
+movetowall
+collect
+turnleft
+movetowall
+drop drop

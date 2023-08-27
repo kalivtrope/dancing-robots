@@ -1,9 +1,9 @@
-local CombGenerator = require("problemset.generator"):new()
+local CombGenerator = require("generators.common"):new()
 
 function CombGenerator.generate(params)
   local n = params.n
   local m = 10
-  if type(n) ~= "number" or n < 1 then error(string.format("invalid value for n: '%s'"), n) return nil end
+  if type(n) ~= "number" or n < 1 then n=10 end
   local seed = params.seed or 42
   math.randomseed(seed)
   local height = m + 3

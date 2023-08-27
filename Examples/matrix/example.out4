@@ -1,0 +1,16 @@
+turnleft
+movetoitem
+collect
+turnleft
+movetoitem
+turnleft
+movetoitem
+collect
+turnright
+movetoitem
+turnleft
+movetoitem
+collect
+turnleft
+movetoend
+drop drop drop

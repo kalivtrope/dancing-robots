@@ -1,4 +1,4 @@
-local Generator = require("problemset.generator")
+local Generator = require("generators.common")
 local MatrixGenerator = Generator:new()
 local Graph = require("data_structures.graph")
 
@@ -8,7 +8,7 @@ function MatrixGenerator.generate(params)
       -- and is at least 2 edges long
       -- however, the shortest path is NOT guaranteed to be unique
   local n = params.n
-  if type(n) ~= "number" or n <3 then error(string.format("invalid value for n: '%s'"), n) return nil end
+  if type(n) ~= "number" or n <3 then n=10 end
   local seed = params.seed or 42
   local total_n = params.n+2
   math.randomseed(seed)
@@ -38,9 +38,9 @@ function MatrixGenerator.generate(params)
   return tostring(gen)
 end
 
---[[ Example usage:
+---[[ Example usage:
 local seed = nil or os.time()
-io.write(MatrixGenerator.generate({n=10, m=10, seed=seed}))
+io.write(MatrixGenerator.generate({n=5, m=8, seed=seed}))
 --]]
 
 return MatrixGenerator

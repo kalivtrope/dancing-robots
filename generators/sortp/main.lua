@@ -1,4 +1,4 @@
-local SortpGenerator = require("problemset.generator"):new()
+local SortpGenerator = require("generators.common"):new()
 
 local function shuffle(seq)
   for i=#seq,2,-1 do
@@ -42,7 +42,7 @@ end
 
 function SortpGenerator.generate(params)
   local n = params.n
-  if type(n) ~= "number" or n < 2 then error(string.format("invalid value for n: '%s'"), n) return nil end
+  if type(n) ~= "number" or n < 2 then n=10 end
   -- n >= 2: length of the input permutation
     -- the resulting grid will have dimensions (2n+2)x(2n+2)
   local total_n = 2*n+2

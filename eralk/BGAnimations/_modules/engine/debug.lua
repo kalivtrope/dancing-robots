@@ -1,6 +1,6 @@
 local Debug = {}
 
-local debug_on = true
+local debug_on = false
 
 
 local function msg_from_seq(...)

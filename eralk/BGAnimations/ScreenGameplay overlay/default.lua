@@ -30,7 +30,7 @@ local input_str = assert(lua.ReadFile(input_path))
 local output_str = assert(lua.ReadFile(output_path))
 local int = Interpreter:new(input_str, output_str)
 
-local judge = require("judges."..int.game.type.."-judge"):attach_to_interpreter(int)
+local judge = require("judges."..int.game.type..".main"):attach_to_interpreter(int)
 
 local JudgeWrapper = require("engine.judge-wrapper")( judge )
 local Dancefloor = require("engine.dancefloor")

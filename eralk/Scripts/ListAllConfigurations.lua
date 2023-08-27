@@ -7,10 +7,10 @@ function ListAllConfigurations()
     local inputs = FILEMAN:GetDirListing(input_path .. "/*.in")
     local outputs = FILEMAN:GetDirListing(output_path .. "/*.out")
 
-    Trace("inputs")
-    rec_print_table(inputs)
-    Trace("outputs")
-    rec_print_table(outputs)
+    --Trace("inputs")
+    --rec_print_table(inputs)
+    --Trace("outputs")
+    --rec_print_table(outputs)
     local input_set = {}
     for _,v in ipairs(inputs) do
       input_set[ string.gsub(v, "%.in$", "") ] = true
