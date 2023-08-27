@@ -1,7 +1,7 @@
 local SpiralGenerator = require("generators.common"):new()
 
 function SpiralGenerator.generate(params)
-  local n = params.n
+  local n = tonumber(params.n)
   if type(n) ~= "number" or n < 1 then n = 10 end
   local gen = SpiralGenerator:new()
   local height = 4*n+2

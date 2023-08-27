@@ -41,7 +41,7 @@ end
 
 
 function SortpGenerator.generate(params)
-  local n = params.n
+  local n = tonumber(params.n)
   if type(n) ~= "number" or n < 2 then n=10 end
   -- n >= 2: length of the input permutation
     -- the resulting grid will have dimensions (2n+2)x(2n+2)
@@ -72,7 +72,7 @@ function SortpGenerator.generate(params)
   return tostring(gen)
 end
 
----[[ Example usage:
+--[[ Example usage:
 local seed = nil --or os.time()
 io.write(SortpGenerator.generate({n=10, perm=nil, seed=seed}))
 --io.write(seed, "\n")

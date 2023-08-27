@@ -7,12 +7,12 @@ function MatrixGenerator.generate(params)
   -- it is guaranteed that the shortest path always exists
       -- and is at least 2 edges long
       -- however, the shortest path is NOT guaranteed to be unique
-  local n = params.n
+  local n = tonumber(params.n)
   if type(n) ~= "number" or n <3 then n=10 end
-  local seed = params.seed or 42
-  local total_n = params.n+2
+  local seed = tonumber(params.seed) or 42
+  local total_n = n+2
   math.randomseed(seed)
-  local m = params.m or math.random(2*n-1,math.min(4*n, n*(n-1)//2-1))
+  local m = tonumber(params.m) or math.random(2*n-1,math.min(4*n, n*(n-1)//2-1))
   local graph = Graph.new_random_component(n, m, seed)
   for i=1,n do
     graph:add_edge(i, i)
@@ -38,7 +38,7 @@ function MatrixGenerator.generate(params)
   return tostring(gen)
 end
 
----[[ Example usage:
+--[[ Example usage:
 local seed = nil or os.time()
 io.write(MatrixGenerator.generate({n=5, m=8, seed=seed}))
 --]]

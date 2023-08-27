@@ -1,7 +1,7 @@
 local CrossGenerator = require("generators.common"):new()
 
 function CrossGenerator.generate(params)
-  local n = params.n
+  local n = tonumber(params.n)
   if type(n) ~= "number" or n < 1 then n=10 end
   local gen = CrossGenerator:new()
   local size = 4*n+7
