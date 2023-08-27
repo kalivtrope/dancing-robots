@@ -119,8 +119,8 @@ end
 
 local function generate()
   local input_file_path = input_path .. args[2] .. ".in"
-  local Generator = require("generators." .. args[1] ".main")
-  local input_handle = assert(io.open(input_file_path))
+  local Generator = require("generators." .. args[1] .. ".main")
+  local input_handle = assert(io.open(input_file_path, "w"))
   input_handle:write(Generator.generate(kwargs))
   input_handle:close()
 end
