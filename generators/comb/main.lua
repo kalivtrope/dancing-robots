@@ -2,8 +2,9 @@ local CombGenerator = require("generators.common"):new()
 
 function CombGenerator.generate(params)
   local n = tonumber(params.n)
-  local m = 10
+  local m = tonumber(params.m)
   if type(n) ~= "number" or n < 1 then n=10 end
+  if type(m) ~= "number" or m < 1 then m=8 end
   local seed = tonumber(params.seed) or 42
   math.randomseed(seed)
   local height = m + 3
