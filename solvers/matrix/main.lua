@@ -112,7 +112,7 @@ local function move_to_column(col_no)
   else
     turn_east()
   end
-  if col_no == 1 or col_no == n then movetowall() state.col = 1 return end
+  if col_no == 1 or col_no == n then movetowall() state.col = col_no return end
   while col_no ~= state.col do
     movetoitem()
     if col_no < state.col then
@@ -133,7 +133,7 @@ local function move_to_row(row_no)
   else
     turn_south()
   end
-  if row_no == 1 or row_no == n then movetowall() state.row = 1 return end
+  if row_no == 1 or row_no == n then movetowall() state.row = row_no return end
   while row_no ~= state.row do
     movetoitem()
     if row_no < state.row then
@@ -184,10 +184,11 @@ local path = shortest_path(source, sink)
 local prev = nil
 for k,v in ipairs(path) do
   if prev then move_to_row(prev) end
-  prev = v
   --if k%2 == 0 then
   --print("move_to_column", v)
   if k > 1 then
+    prev = v
+    --print("move to col", v)
       move_to_column(v)
       collect()
     end
