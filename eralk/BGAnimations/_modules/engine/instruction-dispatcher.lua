@@ -1,5 +1,5 @@
 local Constants = require("engine.constants")
-local Debug = require("engine.debug")
+--local Debug = require("engine.debug")
 local Queue = require("data_structures.queue")
 local RecognizedTypes = require("engine.recognized-types")
 local min_notes_per_batch, max_pn = Constants.min_notes_per_batch, Constants.max_pn  -- pn = player_number
@@ -54,14 +54,14 @@ end
 local function dispatch_batch(batch_successful)
   local needs_extra_instruction = processed_number_of_batches < extra_instruction and 1 or 0
   MESSAGEMAN:Broadcast("ExecuteNext", {randomize = not batch_successful, n=instruction_per_batch+needs_extra_instruction})
-  Debug.stderr_msg(batch_successful, processed_number_of_batches, total_number_of_batches)
+  --Debug.stderr_msg(batch_successful, processed_number_of_batches, total_number_of_batches)
 end
 
 local function dispatch_processed_batches_together()
   while batch_queues[default_pn]:size() > 0 do
     dispatch_batch(batch_queues[default_pn]:dequeue())
     processed_number_of_batches = processed_number_of_batches + 1
-    Debug.stderr_msg("batch no", processed_number_of_batches, "out of", total_number_of_batches)
+    --Debug.stderr_msg("batch no", processed_number_of_batches, "out of", total_number_of_batches)
   end
 end
 
@@ -104,7 +104,7 @@ local function flush_batches()
   dispatch_processed_batches()
   check_if_all_notes_processed()
   note_counter = note_counter + 1
-  Debug.stderr_msg("# of notes", note_counter, "out of", total_numbers_of_notes[default_pn])
+  --Debug.stderr_msg("# of notes", note_counter, "out of", total_numbers_of_notes[default_pn])
 end
 
 local function inc_hits(pn)
@@ -167,11 +167,11 @@ local function prepare_variables()
         end
         total_number_of_batches = math.max(1, math.min(total_number_of_batches,
                                            total_numbers_of_notes[pn] // min_notes_per_batch))
-        Debug.stderr_msg("total number of notes, p", pn, total_numbers_of_notes[pn])
+        --Debug.stderr_msg("total number of notes, p", pn, total_numbers_of_notes[pn])
       else
         total_numbers_of_notes[default_pn] =
           (total_numbers_of_notes[default_pn] or 0) + count_notes_from_note_data(player:GetNoteData())
-        Debug.stderr_msg("total number of notes, p", default_pn, total_numbers_of_notes[pn])
+        --Debug.stderr_msg("total number of notes, p", default_pn, total_numbers_of_notes[pn])
       end
     end
   end
@@ -183,8 +183,8 @@ local function prepare_variables()
     batch_queues[default_pn] = Queue:new()
     notes_per_batch[default_pn] = total_numbers_of_notes[default_pn] // total_number_of_batches
     extra_notes[default_pn] = total_numbers_of_notes[default_pn] % total_number_of_batches
-    Debug.stderr_msg("notes per batch", notes_per_batch[default_pn])
-    Debug.stderr_msg("extra notes", extra_notes[default_pn])
+    --Debug.stderr_msg("notes per batch", notes_per_batch[default_pn])
+    --Debug.stderr_msg("extra notes", extra_notes[default_pn])
     current_numbers_of_hits[default_pn] = 0
     current_numbers_of_misses[default_pn] = 0
   else
@@ -200,14 +200,14 @@ local function prepare_variables()
   end
   -- last phase: assign variables that don't directly depend on the distinguish_player_score variable
   instruction_per_batch = total_number_of_instructions // total_number_of_batches
-  Debug.stderr_msg("instruction_per_batch", instruction_per_batch)
+  --Debug.stderr_msg("instruction_per_batch", instruction_per_batch)
   extra_instruction = total_number_of_instructions % total_number_of_batches
-  Debug.stderr_msg("extra instruction", extra_instruction)
+  --Debug.stderr_msg("extra instruction", extra_instruction)
   processed_number_of_batches = 0
 
   game_over = false
-  Debug.stderr_msg("# of batches:", total_number_of_batches)
-  Debug.stderr_msg("# of instructions:", total_number_of_instructions)
+  --Debug.stderr_msg("# of batches:", total_number_of_batches)
+  --Debug.stderr_msg("# of instructions:", total_number_of_instructions)
   note_counter = 0
 end
 

@@ -156,7 +156,7 @@ local function get_tap_notes_from_judgment(judgment)
   local notes = {}
   if is_tap_judgment(judgment) then
     for _,v in pairs(judgment.Notes) do
-      log_msg(v:GetTapNoteType())
+      --log_msg(v:GetTapNoteType())
       if v
         and is_recognized_tap_score(judgment.TapNoteScore)
         and is_recognized_note_type(v:GetTapNoteType())

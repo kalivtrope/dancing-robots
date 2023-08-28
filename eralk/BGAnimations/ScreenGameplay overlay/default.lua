@@ -9,7 +9,7 @@ local should_distinguish_player_score = RecognizedTypes.should_distinguish_playe
 
 local curr_style_type = GAMESTATE:GetCurrentStyle():GetStyleType()
 if not is_recognized_style_type(curr_style_type) then
-  Debug.screenMsg("Unrecognized style type:", curr_style_type)
+  Debug.screen_msg("Unrecognized style type:", curr_style_type)
   return Def.Actor{}
 end
 
