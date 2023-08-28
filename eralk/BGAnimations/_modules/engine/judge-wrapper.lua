@@ -15,12 +15,12 @@ local cells_per_column
 local Judge, maze, robot_state
 local maze_data
 local judgment_set
-local curr_frame = {}
+local curr_frame
 
 -- contains the last drawn bounding box
-local old_frame = {}
+local old_frame
 -- contains the bounding box we want to transition into
-local new_frame = {}
+local new_frame
 
 -- Actor that keeps a timer for maintaining animations
 local timer
@@ -250,6 +250,9 @@ return function(judge)
   return Def.ActorFrame{
   Name="JudgeWrapperClockwork",
   InitCommand=function(self)
+    curr_frame = {}
+    old_frame = {}
+    new_frame = {}
     prepare_maze_data()
     animation_in_progress = false
     needs_refresh = true
