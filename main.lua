@@ -139,7 +139,7 @@ local function test()
     judge:judge_next_command()
     if judge.judgment_received then
       io.write(tostring(judge.interpreter.game))
-      io.write(judge.judgment_success and "SUCCESS" or "FAIL: " .. judge.judgment_verdict)
+      io.write(judge.judgment_success and "SUCCESS\n" or "FAIL: " .. judge.judgment_verdict)
       break
     end
     if show_progress then
