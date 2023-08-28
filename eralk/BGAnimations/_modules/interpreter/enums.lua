@@ -92,7 +92,7 @@ return {
     SORTP = 'sortp',
     SPIRAL = 'spiral',
     COMB = 'comb',
-    CROSS = 'cross',
+    WAVE = 'wave',
   },
   GameResult = {
     NONE = 1,

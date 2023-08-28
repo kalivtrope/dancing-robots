@@ -1,5 +1,5 @@
 local type_str = io.read("*line")
-assert(type_str == "cross", string.format("wrong game type (expected 'cross', got '%s')", type_str))
+assert(type_str == "wave", string.format("wrong game type (expected 'wave', got '%s')", type_str))
 local n = (io.read("*n") - 7) // 4
 
 local item_cnt = 0

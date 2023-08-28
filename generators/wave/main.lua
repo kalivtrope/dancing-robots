@@ -1,16 +1,16 @@
-local CrossGenerator = require("generators.common"):new()
+local WaveGenerator = require("generators.common"):new()
 
-function CrossGenerator.generate(params)
+function WaveGenerator.generate(params)
   local n = tonumber(params.n)
   if type(n) ~= "number" or n < 1 then n=10 end
-  local gen = CrossGenerator:new()
+  local gen = WaveGenerator:new()
   local size = 4*n+7
-  gen:init("cross", size, size)
+  gen:init("wave", size, size)
   gen:add_borders()
   local center = size//2+1
   gen.grid[center][center]:add_start()
   local hole_delta_row, hole_delta_col = -1, 0
-  local function generate_cross(m)
+  local function generate_wave(m)
     for i=1,m do
       gen.grid[center-(m//2+1-i)][center-(m+1)]:add_wall()
       gen.grid[center-(m+1)][center-(m//2+1-i)]:add_wall()
@@ -29,7 +29,7 @@ function CrossGenerator.generate(params)
     hole_delta_row, hole_delta_col = hole_delta_col, -hole_delta_row
   end
   for m=1,n+1 do
-    generate_cross(2*m-1)
+    generate_wave(2*m-1)
   end
   hole_delta_row, hole_delta_col = -hole_delta_col, hole_delta_row
   local m=2*n+1
@@ -40,8 +40,8 @@ end
 
 -- example usage:
 --[[
-io.write(CrossGenerator.generate({n=10}))
+io.write(WaveGenerator.generate({n=10}))
 --]]
 
 
-return CrossGenerator
+return WaveGenerator
