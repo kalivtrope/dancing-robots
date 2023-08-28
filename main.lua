@@ -16,7 +16,11 @@ COMMANDS
     If the generator requires N additional named args (with names <arg1>,...,<argN>
     and respective values <val1>,...,<valN>), specify them space-separated like this:
       <arg1> <val1> <arg2> <val2> ... <argN> <valN>
-  test <input-name>
+  test <input-name> OR <input-path> <output-path>
+    Test a single problem instance.
+    You can either specify just an <input-name> which is equivalent to calling
+    test Inputs/<input-name>.in Outputs/<input-name>.out
+    OR provide a full path (relative or absolute) for both the input and output files.
 
 OPTIONS
   -h, --help
@@ -59,8 +63,8 @@ local args = {}
 local kwargs = {}
 local curr_key
 local awaiting_value = false
-local input_path = "./Inputs/"
-local output_path = "./Outputs/"
+local default_input_path = "./Inputs/"
+local default_output_path = "./Outputs/"
 for _,str in ipairs(arg) do
   if awaiting_value then
     kwargs[curr_key] = str
@@ -84,7 +88,7 @@ for _,str in ipairs(arg) do
       fail(string.format("expected one of {generate,test} at position 1, got '%s' instead", str))
     end
     if (command_name == "generate" and #args < 2)
-      or (command_name == "test" and #args < 1) then
+      or (command_name == "test" and #args < 2) then
       args[#args+1] = str
     else
       curr_key = str
@@ -118,7 +122,7 @@ else
 end
 
 local function generate()
-  local input_file_path = input_path .. args[2] .. ".in"
+  local input_file_path = default_input_path .. args[2] .. ".in"
   local Generator = require("generators." .. args[1] .. ".main")
   local input_handle = assert(io.open(input_file_path, "w"))
   input_handle:write(Generator.generate(kwargs))
@@ -127,8 +131,12 @@ end
 
 local function test()
   local Interpreter = require("interpreter.interpreter")
-  local game_conf_path = input_path .. args[1] .. ".in"
-  local player_input_path = output_path .. args[1] .. ".out"
+  local game_conf_path = default_input_path .. args[1] .. ".in"
+  local player_input_path = default_output_path .. args[1] .. ".out"
+  if args[2] then
+    game_conf_path = args[1]
+    player_input_path = args[2]
+  end
   local game_configuration_str  = assert(io.open(game_conf_path, "r")):read("*a")
   local player_input_str = assert(io.open(player_input_path, "r")):read("*a")
   local int = Interpreter:new(game_configuration_str, player_input_str, show_warnings)
@@ -167,7 +175,7 @@ elseif command_name == "test" then
   if not args[1] then
     fail(msg_missing_arg("input-name", "test"))
   end
-  if string.find(args[1], "/") then
+  if not args[2] and string.find(args[1], "/") then
     fail(msg_slash_in_filename("input-name"))
   end
   test()
