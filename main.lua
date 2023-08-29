@@ -8,6 +8,7 @@ Usage: main.lua [-h|--help]
                 [-w|--show-warnings]
                 [-s <num>|--seed <num>]
                 [-d <seconds>|--delay <seconds>]
+                [--stdout]
                 <command> [<args>]
 
 COMMANDS
@@ -37,6 +38,10 @@ OPTIONS
   -d, --delay <seconds>
       Specify a delay between two command executions in seconds. Must be a non-negative number.
       Only effective with --show-progress. Defaults to 0.1.
+  --stdout
+      Print the generator output to stdout instead of a file.
+      If you intend to use this option, you should do it before specifying
+      any positional arguments to the generator.
 ]]
 end
 
@@ -65,6 +70,7 @@ local curr_key
 local awaiting_value = false
 local default_input_path = "./Inputs/"
 local default_output_path = "./Outputs/"
+local use_stdout = false
 for _,str in ipairs(arg) do
   if awaiting_value then
     kwargs[curr_key] = str
@@ -81,13 +87,15 @@ for _,str in ipairs(arg) do
   elseif str == '-d' or str == '--delay' then
     curr_key = "delay"
     awaiting_value = true
+  elseif str == '--stdout' then
+    use_stdout = true
   elseif (str == "generate" or str == "test") and not command_name then
     command_name = str
   else
     if not command_name then
       fail(string.format("expected one of {generate,test} at position 1, got '%s' instead", str))
     end
-    if (command_name == "generate" and #args < 2)
+    if (command_name == "generate" and #args < 2 - (use_stdout and 1 or 0))
       or (command_name == "test" and #args < 2) then
       args[#args+1] = str
     else
@@ -122,9 +130,14 @@ else
 end
 
 local function generate()
-  local input_file_path = default_input_path .. args[2] .. ".in"
+  local input_handle
+  if use_stdout then
+    input_handle = io.stdout
+  else
+    local input_file_path = default_input_path .. args[2] .. ".in"
+    input_handle = assert(io.open(input_file_path, "w"))
+  end
   local Generator = require("generators." .. args[1] .. ".main")
-  local input_handle = assert(io.open(input_file_path, "w"))
   input_handle:write(Generator.generate(kwargs))
   input_handle:close()
 end
@@ -164,10 +177,10 @@ if command_name == "generate" then
   if not args[1] then
     fail(msg_missing_arg("problem-class", "generate"))
   end
-  if not args[2] then
+  if not use_stdout and not args[2] then
     fail(msg_missing_arg("input-name", "generate"))
   end
-  if string.find(args[2], "/") then
+  if not use_stdout and string.find(args[2], "/") then
     fail(msg_slash_in_filename("input-name"))
   end
   generate()
