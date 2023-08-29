@@ -22,8 +22,6 @@ local curr_config = GAMESTATE:Env()[config_key]
 
 local Interpreter = require("interpreter.interpreter")
 
--- TODO I'll keep this this until the engine and interpreter are properly connected
--- then I'll try to create a new screen for choosing a game
 local input_path = input_dir .. "/" .. curr_config ..  ".in"
 local output_path = output_dir .. "/" .. curr_config .. ".out"
 local input_str = assert(lua.ReadFile(input_path))
