@@ -1,10 +1,11 @@
 # sortp
 (as in "`sort` a `p`ermutation")
 
-Oh no, our beautiful identity permutation has just been shuffled!
+Oh no, our beautiful identity permutation had just been shuffled!
 Can you help us put it back to its original form?
 
-## Maze format
+## Problem statement
+### Maze format
 - let `n` be a positive integer greater than one
 - let `p: {1..n} -> {1..n} != id` be a permutation (bijective function with the same domain and range - `{1..n}`)
 - the permutation `p` is encoded on the grid as follows:
@@ -18,7 +19,8 @@ Can you help us put it back to its original form?
     - this diagonal continues in the bottom-right direction all the way until it hits a border wall
   - the start is placed at position column 2, row 2 (the bottom-left-most non-wall position)
   - the start is placed at position column `2n+1`, row `2n+1` (the top-right-most non-wall position)
-- Eralk's task is to rearrange the items so that the grid represents a sequnce `1,2,...,n`
+### Objective
+- Eralk's task is to rearrange the items so that the grid represents a sequence `1,2,...,n`
 
 ## Examples
 
@@ -45,14 +47,16 @@ sortp
 ```
 #### Example final form
 ```
-# # # # # # # #
-# . . # . . e #
-# . . . . I # #
-# # . . . . . #
-# . . I # I . #
-# . . . . # . #
-# IS # I . I # #
-# # # # # # # #
+# # # # # # # # # #
+# . . . . # . . e #
+# . . . . . . I # #
+# . . # . . . . . #
+# . . . . I # I . #
+# # . . . . . # . #
+# . . I # I . I # #
+# . . . . # . . . #
+# S # I . I # I . #
+# # # # # # # # # #
 ```
 #### Example output
 ```

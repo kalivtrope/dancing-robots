@@ -5,7 +5,8 @@ Your goal here is to traverse a "comb"-shaped maze while collecting every item a
 The items are sometimes randomly placed on the tips of the comb, but nowhere else.
 
 
-## Maze format
+## Problem statement
+### Maze format
 - let `n,m` be positive integers
 - you are given a `(m+3)x(4n+3)` grid
   - there are solid walls on all of its 4 borders (so there is a solid left,right,bottom,top wall line)
@@ -16,6 +17,7 @@ The items are sometimes randomly placed on the tips of the comb, but nowhere els
   - this cell may or may not be containing an item
 - there are no other walls or items elsewhere other that at the just mentioned positions
 - you start off at the top-left-most empty cell (the position `(2,2)`) and end at the bottom-right-most empty cell (the position `(m+2,4n+2)`).
+### Objective
 - you must **drop** all items at the ending cell before your program finishes
 ## Examples
 You may find all of the inputs and outputs in the `Examples/comb` directory.
@@ -49,7 +51,7 @@ comb
 ```
 #### Example final form
 - note: the robot orientation doesn't matter
-- however the robot's inventory MUST be empty after finishing the program
+- also note that the robot's inventory MUST be empty after finishing the program
 ```
 # # # # # # # # # # #
 # S # . . . # . . . #

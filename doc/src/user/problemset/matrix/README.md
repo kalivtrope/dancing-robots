@@ -3,7 +3,8 @@
 You are given an undirected graph with self-loops on each node in the form of an adjacency *matrix*.
 Find and report the shortest path in this graph.
 
-## Maze format
+## Problem statement
+### Maze format
 - let `n >= 3` be a positive integer
 - let there be an undirected unweighted graph `G=({1..n},E)`
   - every vertex of the graph contains a self-loop
@@ -15,9 +16,10 @@ Find and report the shortest path in this graph.
   - there is an edge `e=(u,v)` in `E` if and only if there is an item at row `u`, column `v`
     - since the graph is undirected, there also exists an edge `e'=(v,u)` opposite to the edge `e`
 - both start and end are placed in the same position `(row, column): (r,s)`
+### Objective
 - your task is to find the shortest path from node `r` to node `s`
   - the length of the shortest path is guaranteed to be at least 2 edges
-  - if there's multiple shortest paths, you may choose to output any (still, you must output only ONE shortest path)
+  - if there's multiple shortest paths, you may choose to output any one of them
 - if the shortest path has length of `k` edges and is consisted of oriented edges `(v1,v2),(v2,v3),...,(v{k}, v{k+1})`, then the robot shall collect items at positions `(v1,v2),...,(v{k},v{k+1})` and drop them all at position `(r, s)`
 - in the end, the only collected or moved items shall be the ones representing the shortest path
 
