@@ -5,7 +5,8 @@ There's currently 5 classes of problems, each with a slightly different goal.
 They all have a couple of things in common:
 - input and output format
 - accepted set of commands
-- Eralk must be in the end cell after interpreting all instructions
+- Eralk must be standing at the end cell after interpreting all instructions
+  - the direction he's facing doesn't matter unless stated otherwise in a specific problem class
 
 ## Problem classes
 - [comb](comb)

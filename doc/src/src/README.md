@@ -18,6 +18,24 @@ Let's go through the project directory structure from the root up:
 └── solvers
 ```
 
+```
+> tree eralk -L 2
+eralk
+├── BGAnimations
+│  ├── _gamedata
+│  ├── _images
+│  ├── _modules
+│  ├── ScreenEvaluationEralk overlay
+│  └── ScreenGameplay overlay
+├── Languages
+│   └── en.ini
+├── metrics.ini
+├── Scripts
+│   ├── ListAllConfigurations.lua
+│   └── loader.lua
+└── ThemeInfo.ini
+```
+
 ## The reason for symlinks
 Right off the beginning, you will notice that I've symlinked a bunch of directories.
 This is because Project OutFox only runs scripts contained in the theme directory.
