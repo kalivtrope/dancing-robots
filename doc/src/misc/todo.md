@@ -1,6 +1,27 @@
 # TODO / would be nice to have
 
-- scoring system
+- pisnicky
+- * figure out deployment
+    - submission system
+        - parsovani nazevtymu + nazevproblemku
+            - zatim alfa bravo charlie delta echo
+        - skore: http request
+            - success? pocet kroku
+            - v pripade failu sehnat orga
+    - kam se budou nahravat vystupy?
+        - na webovou stranku :3
+        - vypisovat log behu programu
+        - omezit velikost vystupu na par mega pls
+        - sshfs?
+            - kouknout jak funguje reloading
+        - (zde se pripadne budou generovat nove vstupy, casove omezene)
+    - na cem se bude hrat?
+        - poskytneme 6 notebooku, kazdy s jednou podlozkou
+    - (jak zaridit testovani ucastnickych solveru?)
+    -jine staticke vstupy pro kazdy tym
+- Czech docs
+- * scoring system
+    - https://sourceforge.net/p/stepmania/mailman/message/30413274/
 - resolve and handle ALL unresolved edge cases
 - figure out why the framerate sometimes drops significantly
 - find out the cause of those occasional in-game segfaults
