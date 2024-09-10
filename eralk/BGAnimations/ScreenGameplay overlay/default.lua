@@ -15,10 +15,11 @@ end
 
 local Constants = require("engine.constants")
 local max_pn = Constants.max_pn
-local config_key = Constants.config_key
+local team_name_key = Constants.team_name_key
+local team_config_key = Constants.team_config_key
 local input_dir = Constants.input_path
 local output_dir = Constants.output_path
-local curr_config = GAMESTATE:Env()[config_key]
+local curr_config = GAMESTATE:Env()[team_name_key] .. "_" .. GAMESTATE:Env()[team_config_key]
 
 local Interpreter = require("interpreter.interpreter")
 

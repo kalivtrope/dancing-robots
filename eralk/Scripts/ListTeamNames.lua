@@ -1,9 +1,10 @@
-function ListAllConfigurations()
+function ListTeamNames()
   local Constants = require("engine.constants")
   local input_path = Constants.input_path
   local output_path = Constants.output_path
-  local config_key = Constants.config_key
-  local function fetch_valid_configurations()
+  local team_name_key = Constants.team_name_key
+  -- TODO: get team name
+  local function fetch_team_names()
     local inputs = FILEMAN:GetDirListing(input_path .. "/*.in")
     local outputs = FILEMAN:GetDirListing(output_path .. "/*.out")
 
@@ -22,10 +23,20 @@ function ListAllConfigurations()
         output_list[#output_list + 1] = stripped
       end
     end
-    return output_list
+    local team_names = {}
+    for _,v in ipairs(output_list) do
+      local stripped = string.gsub(v, "_.*$", "")
+      team_names[stripped] = true
+    end
+    local res = {}
+    for k in pairs(team_names) do
+      res[#res + 1] = k
+    end
+    table.sort(res)
+    return res
   end
   return {
-    Name="ConfigList",
+    Name="TeamNames",
     GoToFirstOnStart=true,
     OneChoiceForAllPlayers=true,
     ExportOnChange=true,
@@ -34,21 +45,23 @@ function ListAllConfigurations()
     LoadSelections= function(self, list, pn)
       -- good ol' wildcards (had to read the SM source code to figure this out)
       -- see src/RageFileManager.cpp and src/RageUtil_FileDB.cpp for more information
-      local curr_config = GAMESTATE:Env()[config_key] or ""
+      local curr_config = GAMESTATE:Env()[team_name_key] or ""
       local key = FindValue(self.Choices, curr_config)
       if key then
         list[key] = true
       else
         list[1] = true
+        GAMESTATE:Env()[team_name_key] = self.Choices[1]
+        MESSAGEMAN:Broadcast("ReloadTeamConfig")
       end
     end,
-    SaveSelections= function(self, list, pn)
+    SaveSelections=function(self, list, pn)
       for i, choice in ipairs(self.Choices) do
         if list[i] then
-          GAMESTATE:Env()[config_key] = choice
+          GAMESTATE:Env()[team_name_key] = choice
         end
       end
     end,
-    Choices=fetch_valid_configurations(),
+    Choices=fetch_team_names(),
   }
 end
