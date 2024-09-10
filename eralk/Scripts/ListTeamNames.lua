@@ -52,13 +52,14 @@ function ListTeamNames()
       else
         list[1] = true
         GAMESTATE:Env()[team_name_key] = self.Choices[1]
-        MESSAGEMAN:Broadcast("ReloadTeamConfig")
       end
+      MESSAGEMAN:Broadcast("ReloadTeamConfig")
     end,
     SaveSelections=function(self, list, pn)
       for i, choice in ipairs(self.Choices) do
         if list[i] then
           GAMESTATE:Env()[team_name_key] = choice
+          MESSAGEMAN:Broadcast("ReloadTeamConfig")
         end
       end
     end,

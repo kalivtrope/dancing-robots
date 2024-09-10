@@ -4,9 +4,11 @@ function ListTeamConfigurations()
   local output_path = Constants.output_path
   local team_name_key = Constants.team_name_key
   local team_config_key = Constants.team_config_key
+  local curr_team = nil
 
   local function fetch_valid_configurations()
     local team_name = GAMESTATE:Env()[team_name_key] or ""
+    curr_team = team_name
     local inputs = FILEMAN:GetDirListing(input_path .. "/" .. team_name .. "_*.in")
     local outputs = FILEMAN:GetDirListing(output_path .. "/" .. team_name .. "_*.out")
 
@@ -68,6 +70,10 @@ function ListTeamConfigurations()
     end,
     Choices=fetch_valid_configurations(),
     Reload=function(self)
+      local team_name = GAMESTATE:Env()[team_name_key] or ""
+      if team_name == curr_team then
+        return "ReloadChanged_None"
+      end
       GAMESTATE:Env()[team_config_key] = nil
       self.Choices = fetch_valid_configurations()
       return "ReloadChanged_All"
