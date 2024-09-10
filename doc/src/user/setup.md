@@ -38,3 +38,6 @@ ln -sr eralk ~/.project-outfox/Themes/eralk
 | ![Fail at end setting](../img/fail_at_end.png) |
 | :--:                                                 |
 | Fail at end setting                              |
+
+## File reloading
+If you want for the engine to notice any new input/output files, return to the Main menu.
