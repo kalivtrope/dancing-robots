@@ -3,15 +3,10 @@ function ListTeamNames()
   local input_path = Constants.input_path
   local output_path = Constants.output_path
   local team_name_key = Constants.team_name_key
-  -- TODO: get team name
+
   local function fetch_team_names()
     local inputs = FILEMAN:GetDirListing(input_path .. "/*.in")
     local outputs = FILEMAN:GetDirListing(output_path .. "/*.out")
-
-    --Trace("inputs")
-    --rec_print_table(inputs)
-    --Trace("outputs")
-    --rec_print_table(outputs)
     local input_set = {}
     for _,v in ipairs(inputs) do
       input_set[ string.gsub(v, "%.in$", "") ] = true
@@ -43,8 +38,6 @@ function ListTeamNames()
     LayoutType="ShowAllInRow",
     SelectType="SelectOne",
     LoadSelections= function(self, list, pn)
-      -- good ol' wildcards (had to read the SM source code to figure this out)
-      -- see src/RageFileManager.cpp and src/RageUtil_FileDB.cpp for more information
       local curr_config = GAMESTATE:Env()[team_name_key] or ""
       local key = FindValue(self.Choices, curr_config)
       if key then
