@@ -18,6 +18,7 @@ local extra_instruction
 local batch_queues
 local processed_number_of_batches
 local current_numbers_of_hits
+local total_number_of_hits
 local current_numbers_of_misses
 local players_present
 local game_over
@@ -95,6 +96,7 @@ end
 local function check_if_all_notes_processed()
   if processed_number_of_batches >= total_number_of_batches then
     game_over = true
+    GAMESTATE:Env()[Constants.played_num_of_steps] = total_number_of_hits
   end
 end
 
@@ -110,6 +112,7 @@ end
 local function inc_hits(pn)
   if not distinguish_player_score then pn = default_pn end
   current_numbers_of_hits[pn] = current_numbers_of_hits[pn] + 1
+  total_number_of_hits = total_number_of_hits + 1
 end
 
 local function inc_misses(pn)
@@ -153,6 +156,7 @@ local function prepare_variables()
   extra_notes = {}
   current_numbers_of_hits = {}
   current_numbers_of_misses = {}
+  total_number_of_hits = 0 -- hack
   total_number_of_batches = total_number_of_instructions
   -- first phase: detect players, count notes for each present player and calculate the number
   --   of batches in case of distinguished scores
@@ -171,6 +175,7 @@ local function prepare_variables()
       else
         total_numbers_of_notes[default_pn] =
           (total_numbers_of_notes[default_pn] or 0) + count_notes_from_note_data(player:GetNoteData())
+          GAMESTATE:Env()[Constants.total_num_of_steps] = total_numbers_of_notes[default_pn]
         --Debug.stderr_msg("total number of notes, p", default_pn, total_numbers_of_notes[pn])
       end
     end

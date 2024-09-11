@@ -15,6 +15,8 @@ local output_path = gamedata_path .. "/Outputs"
 local team_name_key = "ERALK_TEAM_NAME"
 local team_config_key = "ERALK_TEAM_CONFIG"
 local verdict_key = "ERALK_VERDICT"
+local total_num_of_steps = "ERALK_TOTAL_NUM_OF_STEPS"
+local played_num_of_steps = "ERALK_PLAYED_NUM_OF_STEPS"
 local max_verdict_messages_displayed = 3
 
 return {
@@ -33,4 +35,5 @@ return {
   team_config_key = team_config_key,
   verdict_key = verdict_key,
   max_verdict_messages_displayed = max_verdict_messages_displayed,
-}
+  total_num_of_steps = total_num_of_steps,
+  played_num_of_steps = played_num_of_steps }
