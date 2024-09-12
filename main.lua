@@ -161,6 +161,11 @@ local function test()
     if judge.judgment_received then
       io.write(tostring(judge.interpreter.game))
       io.write(judge.judgment_success and "SUCCESS\n" or "FAIL: " .. judge.judgment_verdict)
+      if judge.judgment_success then
+        os.exit(42)
+      else
+        os.exit(43)
+      end
       break
     end
     if show_progress then
