@@ -15,7 +15,11 @@ end
 return Def.ActorFrame{
   OnCommand=function(self)
     controller = LoadModule("Lua.InputSystem.lua")(self)
-    WriteResult(ConstructStats())
+    for pn=1,Constants.max_pn do
+      if GAMESTATE:Env()[Constants.played_num_of_steps][pn] then
+        WriteResult(ConstructStats(pn))
+      end
+    end
     SCREENMAN:GetTopScreen():AddInputCallback(controller)
   end,
   OffCommand=function(self)
@@ -67,8 +71,14 @@ return Def.ActorFrame{
       Def.BitmapText{
       Font="Common Normal",
       OnCommand=function(self)
-        self:y(font_size_px*main_verdict_zoom + font_size_px*max_verdict_messages_displayed)
-        self:settext("\n\nHit " .. (GAMESTATE:Env()[Constants.played_num_of_steps] or -1)  .. "/" .. (GAMESTATE:Env()[Constants.total_num_of_steps] or 0) .. " notes")
+        self:y(font_size_px*main_verdict_zoom + Constants.max_pn*font_size_px*max_verdict_messages_displayed)
+        local text = ""
+        for pn=1,Constants.max_pn do
+          if GAMESTATE:Env()[Constants.played_num_of_steps][pn] then
+        text = (#text == 0 and "\n\n" or text .. "\n") .. "Player " .. pn .. " hit " .. GAMESTATE:Env()[Constants.played_num_of_steps][pn]  .. "/" .. GAMESTATE:Env()[Constants.total_num_of_steps][pn] .. " notes"
+          end
+        end
+        self:settext(text)
       end,
     }
   },

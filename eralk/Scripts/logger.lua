@@ -12,7 +12,7 @@ function WriteResult(result)
                    .. result.played_num_of_steps)
 end
 
-function ConstructStats()
+function ConstructStats(pn)
   local Constants = require("engine.constants")
   local team_name_key = Constants.team_name_key
   local verdict_key = Constants.verdict_key
@@ -22,7 +22,7 @@ function ConstructStats()
     timestamp = Date.Today() .. "_" .. Time.Now(),
     team_name = GAMESTATE:Env()[team_name_key],
     level_cleared = ((GAMESTATE:Env()[verdict_key] or {})[1] and 1 or 0),
-    total_num_of_steps = (GAMESTATE:Env()[total_num_of_steps] or 0),
-    played_num_of_steps = (GAMESTATE:Env()[played_num_of_steps] or -1),
+    total_num_of_steps = (GAMESTATE:Env()[total_num_of_steps][pn] or 0),
+    played_num_of_steps = (GAMESTATE:Env()[played_num_of_steps][pn] or -1),
   }
 end
