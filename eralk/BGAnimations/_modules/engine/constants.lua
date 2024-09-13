@@ -17,6 +17,8 @@ local team_config_key = "ERALK_TEAM_CONFIG"
 local verdict_key = "ERALK_VERDICT"
 local total_num_of_steps = "ERALK_TOTAL_NUM_OF_STEPS"
 local played_num_of_steps = "ERALK_PLAYED_NUM_OF_STEPS"
+local num_of_instructions = "ERALK_NUM_OF_INSTRUCTIONS"
+local num_of_randomized_instructions = "ERALK_NUM_OF_RANDOMIZED_INSTRUCTIONS"
 local max_verdict_messages_displayed = 3
 
 return {
@@ -36,4 +38,6 @@ return {
   verdict_key = verdict_key,
   max_verdict_messages_displayed = max_verdict_messages_displayed,
   total_num_of_steps = total_num_of_steps,
-  played_num_of_steps = played_num_of_steps }
+  played_num_of_steps = played_num_of_steps,
+  num_of_instructions = num_of_instructions,
+  num_of_randomized_instructions = num_of_randomized_instructions}

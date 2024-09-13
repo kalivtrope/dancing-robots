@@ -288,6 +288,9 @@ return function(judge)
     ExecuteNextMessageCommand=function(self, params)
       local randomize = params.randomize
       local n = params.n
+      if randomize then
+        GAMESTATE:Env()[Constants.num_of_randomized_instructions] = GAMESTATE:Env()[Constants.num_of_randomized_instructions] + n
+      end
       execute_n(n, randomize)
       end_animate_prematurely()
     end,

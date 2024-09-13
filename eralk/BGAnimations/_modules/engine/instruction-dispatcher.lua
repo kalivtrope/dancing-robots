@@ -167,6 +167,8 @@ local function prepare_variables()
   current_numbers_of_misses = {}
   total_numbers_of_hits = {}
   total_number_of_batches = total_number_of_instructions
+  GAMESTATE:Env()[Constants.num_of_instructions] = total_number_of_instructions
+  GAMESTATE:Env()[Constants.num_of_randomized_instructions] = 0
   GAMESTATE:Env()[Constants.played_num_of_steps] = {}
   GAMESTATE:Env()[Constants.total_num_of_steps] = {}
   -- first phase: detect players, count notes for each present player and calculate the number

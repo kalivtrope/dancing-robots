@@ -1,1 +1,1 @@
-timestamp,team_name,level_cleared,total_num_of_steps,played_num_of_steps
+timestamp,team_name,level_cleared,total_num_of_steps,played_num_of_steps,num_of_instructions,num_of_randomized_instructions
