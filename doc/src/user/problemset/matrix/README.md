@@ -33,7 +33,7 @@ See the robot's progress while solving these problems by e.g. running
 ### Example 1
 #### Explanation
 We need to find a shortest path from node `1` to node `4`.
-One such path consists of edges `(1,3)` and `(3,4)`.
+One such path consists of edges `(1,2)` and `(2,4)`.
 Thus we pick up these two items at corresponding positions and bring them to the endpoint with us.
 #### Example input (n=4) (Examples/matrix/matrix_n4.in)
 ```
@@ -50,7 +50,7 @@ matrix
 ```
     1 2 3 4
   # # # # # #
-1 # I . . ESII #
+1 # I . . nESII #
 2 # I I I . #
 3 # . I I I #
 4 # . I I I #

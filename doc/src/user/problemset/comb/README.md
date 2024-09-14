@@ -12,9 +12,9 @@ The items are sometimes randomly placed on the tips of the comb, but nowhere els
   - there are solid walls on all of its 4 borders (so there is a solid left,right,bottom,top wall line)
 - the origin `(1,1)` is located at the top left corner of the maze (the intersection of the top and left border)
 - for each valid integer `k`, the `(4k+3)`rd column is filled with wall except for a single cell at the very bottom of this column (just before the border)
-  - this cell may or may not be containing an item
+  - this cell may or may not contain an item
 - for each valid integer `k`, the `(4k+1)`st column is filled with wall except for a single cell at the very top of this column (just before the border)
-  - this cell may or may not be containing an item
+  - this cell may or may not contain an item
 - there are no other walls or items elsewhere other that at the just mentioned positions
 - you start off at the top-left-most empty cell (the position `(2,2)`) and end at the bottom-right-most empty cell (the position `(m+2,4n+2)`).
 ### Objective
@@ -64,7 +64,7 @@ comb
 # . # . # . # . # . #
 # . # . # . # . # . #
 # . # . # . # . # . #
-# . . . # . . . # n #
+# . . . # . . . # nEIII #
 # # # # # # # # # # #
 ```
 #### Example output (Examples/comb/comb_n2.out)
