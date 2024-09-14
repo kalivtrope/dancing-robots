@@ -14,7 +14,7 @@ local Game = {
   type = GameType.NONE,
   robot_state = nil,
   code = nil,
-  uniform_cell_print=true,
+  uniform_cell_print=false,
 }
 
 Game.__tostring = function(self)

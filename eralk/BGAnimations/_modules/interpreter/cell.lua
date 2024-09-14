@@ -14,7 +14,7 @@ Cell.__index = Cell
 
 Cell.stringify = function(self,uniform_print)
   if not uniform_print then
-    return self:tostring()
+    return self:__tostring()
   end
   local min_val = ObjectType._NUM_OBJS
   for k,v in pairs(self.object_counts) do
